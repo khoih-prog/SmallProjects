@@ -2,7 +2,7 @@
 
 ## ISR-based Fire Smoke Alarm demonstrate how to use ESP8266TimerInterrupt, ESP32TimerInterrupt and TimerInterrupt Library
 
-This is just an example how to use convert the usage from normal `software timer` to `ISR-based timer`.
+These are examples how to use convert the usage from normal `software timer` to `ISR-based timer`.
 
 Why do we need this `Hardware Timer Interrupt`?
 
