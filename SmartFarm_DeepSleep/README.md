@@ -16,11 +16,10 @@ In the sample project, you can use these features:
   b. Fahrenheit
 
 2. `Pump Mode`
-
-  a. Auto & Notice
-  b. Auto
-  c. Manual & Notice
-  d. Manual
+    a. Auto & Notice
+    b. Auto
+    c. Manual & Notice
+    d. Manual
 
 3. `DHT Type`
 
