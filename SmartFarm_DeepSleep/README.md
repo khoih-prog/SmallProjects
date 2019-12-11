@@ -9,17 +9,21 @@ In the sample project, you can use these features:
 3. Many configurable parameters, such as alarm setpoint, pump running setpoint, etc...
 
 ## Menu-based Configurable Parameters
-1. `Degree`: 
+
+1. `Degree`:
+
   a. Celcius
   b. Fahrenheit
 
 2. `Pump Mode`
+
   a. Auto & Notice
   b. Auto
   c. Manual & Notice
   d. Manual
 
 3. `DHT Type`
+
   a. Auto Detect
   b. DHT11
   c. MW33
@@ -28,12 +32,14 @@ In the sample project, you can use these features:
   f. RHT03
 
 4. `Moist Alarm Interval`
+
   a. No Alarm
   b. Every 1 hour
   c. Every 6 hrs
   d. Every 24 hrs
 
 5. `Soil Moist Sensor Type`
+
   a. Resistive
   b. Capacitive
   
@@ -53,6 +59,7 @@ In the sample project, you can use these features:
 12. DeepSleep Time in minutes
 
 ## Control Buttons
+
 1. `Restart`
 2. `Force DeepSleep`
 
