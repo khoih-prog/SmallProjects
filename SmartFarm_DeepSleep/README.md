@@ -12,48 +12,49 @@ In the sample project, you can use these features:
 
 1. `Degree`:
 
-  a. Celcius
+  -a. Celcius
   
-  b. Fahrenheit
+  -b. Fahrenheit
 
 2. `Pump Mode`
-    a. Auto & Notice
+
+  -a. Auto & Notice
     
-    b. Auto
+  -b. Auto
     
-    c. Manual & Notice
+  -c. Manual & Notice
     
-    d. Manual
+  -d. Manual
 
 3. `DHT Type`
 
-  a. Auto Detect
+  -a. Auto Detect
   
-  b. DHT11
+  -b. DHT11
   
-  c. MW33
+  -c. MW33
   
-  d. DHT22
+  -d. DHT22
   
-  e. AM2302
+  -e. AM2302
   
-  f. RHT03
+  -f. RHT03
 
 4. `Moist Alarm Interval`
 
-  a. No Alarm
+  -a. No Alarm
   
-  b. Every 1 hour
+  -b. Every 1 hour
   
-  c. Every 6 hrs
+  -c. Every 6 hrs
   
-  d. Every 24 hrs
+  -d. Every 24 hrs
 
 5. `Soil Moist Sensor Type`
 
-  a. Resistive
+  -a. Resistive
   
-  b. Capacitive
+  -b. Capacitive
   
 ## Other configurable parameters
 
