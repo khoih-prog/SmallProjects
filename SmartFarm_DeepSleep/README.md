@@ -12,9 +12,9 @@ In the sample project, you can use these features:
 
 1. `Degree`:
 
-  1.a. Celcius
+  - a. Celcius
   
-  1.b. Fahrenheit
+  - b. Fahrenheit
 
 2. `Pump Mode`
 
