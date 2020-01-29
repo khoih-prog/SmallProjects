@@ -1,8 +1,8 @@
-# AutoReconnect to demonstrate the usage of WiFi and Blynk AutoReConnect feature for ESP8266, ESP32
+## AutoReconnect to demonstrate the usage of WiFi and Blynk AutoReConnect feature for ESP8266, ESP32
 
-**Why do we need this `AutoReconnect`?**
+### Why do we need this `AutoReconnect`?
 
-Imagine you have a system with a `mission-critical` function, measuring water level and control the sump pump or doing something much more important using extensive GUI, such as medical equipments, security and/or fire-smoke alarm, etc. You normally use a `software timer to poll`, or even place the function in loop(). But what if another function is blocking the `loop()` or `setup()`.
+Imagine you have a system with `mission-semi-critical` functions, measuring water level and control the sump pump or doing something much more important using extensive GUI, such as medical equipments, security and/or fire-smoke alarm, etc. You normally use a `software timer to poll`, or even place the function in loop(). But what if another function is blocking the `loop()` or `setup()`.
 
 So your function might not be executed, and the result would be disastrous.
 
@@ -14,14 +14,14 @@ The catch is your function is now part of an `ISR (Interrupt Service Routine)`, 
 
 https://www.arduino.cc/reference/en/language/functions/external-interrupts/attachinterrupt/
 
-What if your to-be-called function is a little bit `fat and lazy`, with some delay(), waiting loops, etc. making it's incompatible with `hardware inteerupt` ?
+***What if your to-be-called function is a little bit `fat and lazy`, with some delay(), waiting loops, etc. making it's incompatible with `hardware inteerupt` ?***
 
 The second best choice is solutions which :
 
 1. Use non-blocking functions in `loop()`
-2. Permit non-blocking AutoReConnect feature to
-  - connect to the best WiFi AP available in the AP list (according to quality: highest RSSI/reliability APs first)
-  - connect to the best Blynk server available in the Blynk-Server list (according to priority: local Blynk servers first, then Cloud-based servers next)
+2. Permit `non-blocking AutoReConnect` feature to
+  - connect to the `best WiFi AP available` in the AP list (according to quality: highest RSSI/reliability APs first)
+  - connect to the `best Blynk server available` in the Blynk-Server list (according to priority: local Blynk servers first, then Cloud-based servers next)
 
 ## Design principles of AutoReConnect
 
