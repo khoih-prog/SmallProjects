@@ -51,11 +51,11 @@ This can be applied in many projects requiring reliable system control, where `g
 
 Initial v1.0.0 release of sample codes to demonstrate the usage of ISR-based timers, designed for Arduino (Mega, Nano, UNO, etc.), ESP8266 and ESP32-based boards, by using these Hardware Timers libraries:
 
-- TimerInterrupt Library v1.0.2 for Arduino (Mega, UNO, Nano, etc. ) boards @ https://github.com/khoih-prog/TimerInterrupt
+1. [TimerInterrupt](https://github.com/khoih-prog/TimerInterrupt) for Arduino (Mega, UNO, Nano, etc. ) boards
+2. [ESP8266TimerInterrupt](https://github.com/khoih-prog/ESP8266TimerInterrupt) for ESP8266 boards
+3. [ESP32TimerInterrupt](https://github.com/khoih-prog/ESP32TimerInterrupt) for ESP32 boards
 
-- ESP8266TimerInterrupt Library v1.0.2 for ESP8266 boards @ https://github.com/khoih-prog/ESP8266TimerInterrupt
-
-- ESP32TimerInterrupt Library v1.0.2 for ESP8266 boards @ https://github.com/khoih-prog/ESP32TimerInterrupt
+Sample codes:
 
 1. [FireSmokeAlarm](./FireSmokeAlarm) 
 2. [FireSmokeAlarm_Arduino](./FireSmokeAlarm_Arduino)
