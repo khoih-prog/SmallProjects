@@ -1,6 +1,6 @@
-# Small Projects to demonstrate the usage of ISR-based timers for ESP8266, ESP32 and Arduino Mega, Nano, etc.
+## Small Projects to demonstrate the usage of ISR-based timers for ESP8266, ESP32 and Arduino Mega, Nano, etc.
 
-## ISR-based Fire Smoke Alarm demonstrate how to use ESP8266TimerInterrupt, ESP32TimerInterrupt and TimerInterrupt Library
+### ISR-based Fire Smoke Alarm demonstrate how to use ESP8266TimerInterrupt, ESP32TimerInterrupt and TimerInterrupt Library
 
 These are examples how to use, design and convert the code from normal `software timer` to `ISR-based timer`.
 
@@ -27,7 +27,7 @@ https://www.arduino.cc/reference/en/language/functions/external-interrupts/attac
 
 2. Typically global variables are used to pass data between an ISR and the main program. To make sure variables shared between an ISR and the main program are updated correctly, declare them as volatile.
 
-## Design principles of ISR-based Fire and Smoke Alarm
+### Design principles of ISR-based Fire and Smoke Alarm
 
 The design principles are as follows:
 
@@ -38,6 +38,32 @@ The design principles are as follows:
 Certainly, with Blynk GUI, we can achieve many more great features, such as `remote check and control, configurable test case and value` , etc. when possible.
 
 This can be applied in many projects requiring reliable system control, where `good, bad, or no connection has no effect on the operation of the system`.
+
+### Projects
+
+#### Release v1.0.1
+
+1. [MasterController](./MasterController)
+2. [SmartFarm_DeepSleep](./SmartFarm_DeepSleep)
+3. [AutoReConnect](./AutoReConnectp) 
+
+#### Initial Release v1.0.0
+
+Initial v1.0.0 release of sample codes to demonstrate the usage of ISR-based timers, designed for Arduino (Mega, Nano, UNO, etc.), ESP8266 and ESP32-based boards, by using these Hardware Timers libraries:
+
+- TimerInterrupt Library v1.0.2 for Arduino (Mega, UNO, Nano, etc. ) boards @ https://github.com/khoih-prog/TimerInterrupt
+
+- ESP8266TimerInterrupt Library v1.0.2 for ESP8266 boards @ https://github.com/khoih-prog/ESP8266TimerInterrupt
+
+- ESP32TimerInterrupt Library v1.0.2 for ESP8266 boards @ https://github.com/khoih-prog/ESP32TimerInterrupt
+
+1. [FireSmokeAlarm](./FireSmokeAlarm) 
+2. [FireSmokeAlarm_Arduino](./FireSmokeAlarm_Arduino)
+3. [ISR_FireSmokeAlarm](./ISR_FireSmokeAlarm)
+4. [ISR_FireSmokeAlarm_Arduino](./ISR_FireSmokeAlarm_Arduino) 
+5. [ISR_Timer_4_Switches](./ISR_Timer_4_Switches)
+
+The corresponding codes using Software Timers are also included to help understand the steps taken in order to convert those codes to be ISR-based.
 
 ## Contributing
 If you want to contribute to this project:
