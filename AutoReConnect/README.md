@@ -29,7 +29,9 @@ The design principles are as follows:
 
 1. Normal functions in the `loop()`, as well as those called by `timers` which are considered `mission-semi-critical`, and must not be interfered or blocked by any other bad tasks, `intentionally or unintentionally`. This principle can be applied to any of your projects.
 2. WiFi is considered just a communications function. Being connected or not must not interfere with the `mission-semi-critical` tasks.
-2. Blynk is considered just a `Graphical-User-Interface (GUI)`. Being connected or not must not interfere with the `mission-semi-critical` tasks.
+3. Enable multiple WiFi APs in a list, so that the program can search and use the best and still available AP in case the currently used AP is out-of-service.
+4. Blynk is considered just a `Graphical-User-Interface (GUI)`. Being connected or not must not interfere with the `mission-semi-critical` tasks.
+5. Enable multiple Blynk Servers (local and cloud-based servers unlimited) in a list, so that the program can search and use the best and still available Blynk Server in case the currently used server is out-of-service.
 
 Certainly, with Blynk GUI, we can achieve many more great features, such as `remote check and control, configurable test case and value` , etc. when possible and available.
 
