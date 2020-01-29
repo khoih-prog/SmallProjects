@@ -20,8 +20,8 @@ The second best choice is solutions which :
 
 1. Use non-blocking functions in `loop()`
 2. Permit `non-blocking AutoReConnect` feature to
-  - connect to the `best WiFi AP available` in the AP list (according to quality: highest RSSI/reliability APs first)
-  - connect to the `best Blynk server available` in the Blynk-Server list (according to priority: local Blynk servers first, then Cloud-based servers next)
+  - auto(re)connect to the `best WiFi AP available` in the AP list (according to quality: highest RSSI/reliability APs first)
+  - auto(re)connect to the `best Blynk server available` in the Blynk-Server list (according to priority: local Blynk servers first, then Cloud-based servers next)
 
 ## Design principles of AutoReConnect
 
