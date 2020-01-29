@@ -246,7 +246,7 @@ Also see examples:
 
 ### Contributions and thanks
 
-1. Thanks to [Madhukesh](https://community.blynk.cc/u/Madhukesh) for repetetively giving a lots of unusual requests and giving reasons to start this library.
+1. Thanks to [Madhukesh](https://community.blynk.cc/u/Madhukesh) for repetitively giving a lots of unusual requests and giving reasons to start this library.
 
 ## Contributing
 If you want to contribute to this project:
