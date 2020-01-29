@@ -198,6 +198,8 @@ void loop()
     connectMultiBlynk();
   }
 
-  Blynk.run();
+  if ( Blynk.connected() )
+    Blynk.run();
+    
   check_status();
 }
