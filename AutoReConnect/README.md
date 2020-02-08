@@ -12,7 +12,7 @@ The best choice is to use a `Hardware Timer with Interrupt` in cooperation with 
 
 The catch is your function is now part of an `ISR (Interrupt Service Routine)`, and must be `lean / mean`, and follow certain rules. More to read on:
 
-https://www.arduino.cc/reference/en/language/functions/external-interrupts/attachinterrupt/
+[Attach Interrupt](https://www.arduino.cc/reference/en/language/functions/external-interrupts/attachinterrupt/)
 
 ***What if your to-be-called function is a little bit `fat and lazy`, with some delay(), waiting loops, etc. making it's incompatible with `hardware interrupt` ?***
 
