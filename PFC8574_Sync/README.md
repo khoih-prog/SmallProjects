@@ -10,7 +10,7 @@ In the sample project, you can use these features:
 2. This example uses array of struct(ure)s to enable timers to control channels in PCF8574 Controllers.
 
 <p align="center">
-    <img src="https://github.com/khoih-prog/SmallProjects/tree/master/PFC8574_Sync/pics">
+    <img src="https://github.com/khoih-prog/SmallProjects/tree/master/PFC8574_Sync/pics/PFC8574.jpg">
 </p>
 
 ### Contributing
