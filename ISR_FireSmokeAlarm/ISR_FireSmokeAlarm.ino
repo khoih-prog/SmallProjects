@@ -1,41 +1,41 @@
 /****************************************************************************************************************************
- * ISR_FireSmokeAlarm.ino
- * ISR-based Fire and Smoke Alarm and Blynk Notification
- * For ESP8266 boards
- * Written by Khoi Hoang
- * Copyright (c) 2019 Khoi Hoang
- * 
- * Built by Khoi Hoang https://github.com/khoih-prog/SmallProjects/ISR_FireSmokeAlarm
- * Licensed under MIT license
- * Version: 1.0.2
- *
- * Now we can use these new 16 ISR-based timers, while consuming only 1 hardware Timer.
- * Their independently-selected, maximum interval is practically unlimited (limited only by unsigned long miliseconds)
- * The accuracy is nearly perfect compared to software timers. The most important feature is they're ISR-based timers
- * Therefore, their executions are not blocked by bad-behaving functions / tasks.
- * This important feature is absolutely necessary for mission-critical tasks.
- *
- * Notes:
- * Special design is necessary to share data between interrupt code and the rest of your program.
- * Variables usually need to be "volatile" types. Volatile tells the compiler to avoid optimizations that assume 
- * variable can not spontaneously change. Because your function may change variables while your program is using them, 
- * the compiler needs this hint. But volatile alone is often not enough.
- * When accessing shared variables, usually interrupts must be disabled. Even with volatile, 
- * if the interrupt changes a multi-byte variable between a sequence of instructions, it can be read incorrectly. 
- * If your data is multiple variables, such as an array and a count, usually interrupts need to be disabled 
- * or the entire sequence of your code which accesses the data.
- *
- * Version Modified By   Date      Comments
- * ------- -----------  ---------- -----------
- *  1.0.0   K Hoang     24/11/2019 Initial coding
- *  1.0.2   K Hoang     28/11/2019 Move to ISR-based to demonstrate how to use ISR-based timed in mission-critical projects 
+   ISR_FireSmokeAlarm.ino
+   ISR-based Fire and Smoke Alarm and Blynk Notification
+   For ESP8266 boards
+   Written by Khoi Hoang
+   Copyright (c) 2019 Khoi Hoang
+
+   Built by Khoi Hoang https://github.com/khoih-prog/SmallProjects/ISR_FireSmokeAlarm
+   Licensed under MIT license
+   Version: 1.0.2
+
+   Now we can use these new 16 ISR-based timers, while consuming only 1 hardware Timer.
+   Their independently-selected, maximum interval is practically unlimited (limited only by unsigned long miliseconds)
+   The accuracy is nearly perfect compared to software timers. The most important feature is they're ISR-based timers
+   Therefore, their executions are not blocked by bad-behaving functions / tasks.
+   This important feature is absolutely necessary for mission-critical tasks.
+
+   Notes:
+   Special design is necessary to share data between interrupt code and the rest of your program.
+   Variables usually need to be "volatile" types. Volatile tells the compiler to avoid optimizations that assume
+   variable can not spontaneously change. Because your function may change variables while your program is using them,
+   the compiler needs this hint. But volatile alone is often not enough.
+   When accessing shared variables, usually interrupts must be disabled. Even with volatile,
+   if the interrupt changes a multi-byte variable between a sequence of instructions, it can be read incorrectly.
+   If your data is multiple variables, such as an array and a count, usually interrupts need to be disabled
+   or the entire sequence of your code which accesses the data.
+
+   Version Modified By   Date      Comments
+   ------- -----------  ---------- -----------
+    1.0.0   K Hoang     24/11/2019 Initial coding
+    1.0.2   K Hoang     28/11/2019 Move to ISR-based to demonstrate how to use ISR-based timed in mission-critical projects
 *****************************************************************************************************************************/
 /****************************************************************************************************************************
- * This example will demonstrate the inherently un-blockable feature of ISR-based timers compared to software timers..
- * Being ISR-based timers, their executions are not blocked by bad-behaving functions / tasks, such as connecting to WiFi, Internet
- * and Blynk services. You can also have many (up to 16) timers to use.
- * This non-being-blocked important feature is absolutely necessary for mission-critical tasks. 
- * You'll see blynkTimer is blocked while connecting to WiFi / Internet / Blynk, or some other possible bad behaving tasks..
+   This example will demonstrate the inherently un-blockable feature of ISR-based timers compared to software timers..
+   Being ISR-based timers, their executions are not blocked by bad-behaving functions / tasks, such as connecting to WiFi, Internet
+   and Blynk services. You can also have many (up to 16) timers to use.
+   This non-being-blocked important feature is absolutely necessary for mission-critical tasks.
+   You'll see blynkTimer is blocked while connecting to WiFi / Internet / Blynk, or some other possible bad behaving tasks..
  *****************************************************************************************************************************/
 //These define's must be placed at the beginning before #include "ESP8266TimerInterrupt.h"
 #define TIMER_INTERRUPT_DEBUG       1
@@ -54,31 +54,31 @@
 #define USE_SSL     false
 
 #if USE_BLYNK_WM
-  #if USE_SSL
-    #include <BlynkSimpleEsp8266_SSL_WM.h>        //https://github.com/khoih-prog/Blynk_WM
-  #else
-    #include <BlynkSimpleEsp8266_WM.h>            //https://github.com/khoih-prog/Blynk_WM
-  #endif
+#if USE_SSL
+#include <BlynkSimpleEsp8266_SSL_WM.h>        //https://github.com/khoih-prog/Blynk_WM
 #else
-  #if USE_SSL
-    #include <BlynkSimpleEsp8266_SSL.h>
-    #define BLYNK_HARDWARE_PORT     9443
-  #else
-    #include <BlynkSimpleEsp8266.h>
-    #define BLYNK_HARDWARE_PORT     8080   
-  #endif
+#include <BlynkSimpleEsp8266_WM.h>            //https://github.com/khoih-prog/Blynk_WM
+#endif
+#else
+#if USE_SSL
+#include <BlynkSimpleEsp8266_SSL.h>
+#define BLYNK_HARDWARE_PORT     9443
+#else
+#include <BlynkSimpleEsp8266.h>
+#define BLYNK_HARDWARE_PORT     8080
+#endif
 #endif
 
 #if !USE_BLYNK_WM
-  #define USE_LOCAL_SERVER    true
-  
-  // If local server
-  #if USE_LOCAL_SERVER
-    char blynk_server[]   = "yourname.duckdns.org";
-    //char blynk_server[]   = "192.168.2.110";
-  #else
-    char blynk_server[]   = "";
-  #endif
+#define USE_LOCAL_SERVER    true
+
+// If local server
+#if USE_LOCAL_SERVER
+char blynk_server[]   = "yourname.duckdns.org";
+//char blynk_server[]   = "192.168.2.110";
+#else
+char blynk_server[]   = "";
+#endif
 
 char auth[]     = "***";
 char ssid[]     = "***";
@@ -152,7 +152,7 @@ bool volatile alarmFlagSmoke   = false;
 
 int volatile gasValue;
 
-BLYNK_CONNECTED() 
+BLYNK_CONNECTED()
 {
   BlynkLedFire.on();
   BlynkLedSmoke.on();
@@ -162,12 +162,12 @@ BLYNK_CONNECTED()
 
   Blynk.virtualWrite(BLYNK_PIN_GAS_HIGH_VALUE, GAS_HIGH_ALARM_LEVEL);
   Blynk.virtualWrite(BLYNK_PIN_GAS_WARN_VALUE, GAS_HIGH_WARNING_LEVEL);
-  
+
   // Reset everything
   GAS_HIGH_ALARM     = GAS_HIGH_ALARM_LEVEL;
   GAS_HIGH_WARNING   = GAS_HIGH_WARNING_LEVEL;
   GAS_LOW_RESET      = GAS_LOW_RESET_LEVEL;
-  
+
   //synchronize the state of widgets with hardware states
   Blynk.syncAll();
 }
@@ -175,46 +175,46 @@ BLYNK_CONNECTED()
 BLYNK_WRITE(BLYNK_PIN_FIRE_TEST)   //Fire Alarm Test, make it a ON/OFF switch, not pushbutton
 {
   testFireAlarm = param.asInt();
-  
-  #if (LOCAL_DEBUG > 1)
-    Serial.println("Fire Alarm Test is: " + String(testFireAlarm? "ON" : "OFF"));
-  #endif
+
+#if (LOCAL_DEBUG > 1)
+  Serial.println("Fire Alarm Test is: " + String(testFireAlarm ? "ON" : "OFF"));
+#endif
 }
 
 BLYNK_WRITE(BLYNK_PIN_SMOKE_TEST)   //Alarm Test, make it a ON/OFF switch, not pushbutton
 {
   testSmokeAlarm = param.asInt();
 
-  #if (LOCAL_DEBUG > 1)
-    Serial.println("Smoke Alarm Test is: " + String(testSmokeAlarm? "ON" : "OFF"));
-  #endif
+#if (LOCAL_DEBUG > 1)
+  Serial.println("Smoke Alarm Test is: " + String(testSmokeAlarm ? "ON" : "OFF"));
+#endif
 }
 
 BLYNK_WRITE(BLYNK_PIN_BUZZER_CONTROL)   //BuzzerEnable, make it a pushbutton to be safe
 {
   buzzerEnable = param.asInt();
 
-  #if (LOCAL_DEBUG > 1)
-    Serial.println("BuzzerEnable is: " + String(buzzerEnable? "ON" : "OFF"));
-  #endif
+#if (LOCAL_DEBUG > 1)
+  Serial.println("BuzzerEnable is: " + String(buzzerEnable ? "ON" : "OFF"));
+#endif
 }
 
 BLYNK_WRITE(BLYNK_PIN_GAS_HIGH_VALUE)   // SLIDER to test Gas HIGH Value Alarm, only effective when BLYNK_PIN_GAS_TEST_ENABLE is ON
 {
   GAS_HIGH_ALARM_TEST = param.asInt();
 
-  #if (LOCAL_DEBUG > 1)
-    Serial.println("GAS_HIGH_ALARM_TEST Level is: " + String(GAS_HIGH_ALARM));
-  #endif
+#if (LOCAL_DEBUG > 1)
+  Serial.println("GAS_HIGH_ALARM_TEST Level is: " + String(GAS_HIGH_ALARM));
+#endif
 }
 
 BLYNK_WRITE(BLYNK_PIN_GAS_WARN_VALUE)   // SLIDER to test Gas WARN Value Alarm, only effective when BLYNK_PIN_GAS_TEST_ENABLE is ON
 {
   GAS_HIGH_WARNING_TEST = param.asInt();
 
-  #if (LOCAL_DEBUG > 1)  
-    Serial.println("GAS_HIGH_WARNING_TEST Level is: " + String(GAS_HIGH_WARNING));
-  #endif
+#if (LOCAL_DEBUG > 1)
+  Serial.println("GAS_HIGH_WARNING_TEST Level is: " + String(GAS_HIGH_WARNING));
+#endif
 }
 
 BLYNK_WRITE(BLYNK_PIN_GAS_TEST_ENABLE)   // Gas Level Alarm / Warning changing Enable, make it a pushbutton to be safe
@@ -234,9 +234,9 @@ BLYNK_WRITE(BLYNK_PIN_GAS_TEST_ENABLE)   // Gas Level Alarm / Warning changing E
     GAS_LOW_RESET      = GAS_LOW_RESET_LEVEL;
   }
 
-  #if (LOCAL_DEBUG > 1)
-    Serial.println("gasAlarmLevelChangeEnable is: " + String(gasAlarmLevelChangeEnable? "ON" : "OFF"));
-  #endif
+#if (LOCAL_DEBUG > 1)
+  Serial.println("gasAlarmLevelChangeEnable is: " + String(gasAlarmLevelChangeEnable ? "ON" : "OFF"));
+#endif
 }
 
 void notifyOnFire()
@@ -246,9 +246,9 @@ void notifyOnFire()
   if (alarmFlagFire  && !flagFireACK)
   {
     flagFireACK = true;
-    #if (LOCAL_DEBUG > 0)
-      Serial.println("Alert: FIRE");
-    #endif
+#if (LOCAL_DEBUG > 0)
+    Serial.println("Alert: FIRE");
+#endif
     Blynk.notify("Alert: FIRE");
     Blynk.setProperty(BLYNK_PIN_LED_FIRE, "color", BLYNK_RED);
   }
@@ -260,9 +260,9 @@ void notifyOnFire()
 }
 
 void notifyOnSmoke()
-{ 
+{
   static bool flagSmokeACK = false;
-  
+
   Blynk.virtualWrite(BLYNK_PIN_GAS_VALUE, gasValue);
 
   if (gasValue >= GAS_HIGH_ALARM)
@@ -271,24 +271,24 @@ void notifyOnSmoke()
     Blynk.setProperty(BLYNK_PIN_GAS_VALUE, "color", BLYNK_RED_0);
   else
     Blynk.setProperty(BLYNK_PIN_GAS_VALUE, "color", BLYNK_GREEN);
-    
+
   if (alarmFlagSmoke && !flagSmokeACK)
   {
     flagSmokeACK = true;
 
-    #if (LOCAL_DEBUG > 0)
-      Serial.println("Alert: SMOKE = " + String(gasValue));
-    #endif
-    
+#if (LOCAL_DEBUG > 0)
+    Serial.println("Alert: SMOKE = " + String(gasValue));
+#endif
+
     Blynk.notify("Alert: SMOKE");
     Blynk.setProperty(BLYNK_PIN_LED_SMOKE, "color", BLYNK_RED);
   }
   else if (!alarmFlagSmoke && flagSmokeACK)
   {
-    #if (LOCAL_DEBUG > 0)
-      Serial.println("notifyOnSmoke: Color reset");
-    #endif
-    
+#if (LOCAL_DEBUG > 0)
+    Serial.println("notifyOnSmoke: Color reset");
+#endif
+
     Blynk.setProperty(BLYNK_PIN_LED_SMOKE, "color", BLYNK_GREEN);
     flagSmokeACK = false;
   }
@@ -308,17 +308,17 @@ void ICACHE_RAM_ATTR ISR_notifyOnFire()
   {
     alarmFlagFire = true;
 
-    #if (LOCAL_DEBUG > 0)
-      Serial.println("iAlert: FIRE");
-    #endif
+#if (LOCAL_DEBUG > 0)
+    Serial.println("iAlert: FIRE");
+#endif
   }
   else if ( alarmFlagFire && (!flameActive && !testFireAlarm )  )
   {
     alarmFlagFire = false;
 
-    #if (LOCAL_DEBUG > 0)
-      Serial.println("iAlert: FIRE reset");
-    #endif
+#if (LOCAL_DEBUG > 0)
+    Serial.println("iAlert: FIRE reset");
+#endif
   }
 }
 
@@ -335,47 +335,47 @@ int ICACHE_RAM_ATTR getPPM(unsigned int _pin)
   static float resistance;
 
   /// The load resistance on the board
-  #define RLOAD   10.0
+#define RLOAD   10.0
   /// Calibration resistance at atmospheric CO2 level
-  #define RZERO   76.63
+#define RZERO   76.63
   /// Parameters for calculating ppm of CO2 from sensor resistance
-  #define PARA    116.6020682
-  #define PARB    2.769034857
-  
+#define PARA    116.6020682
+#define PARB    2.769034857
+
   val = analogRead(_pin);
-  resistance = (( 1023.0f/(float) val ) * 5.0f - 1.0f) * RLOAD;
-  
-  return (int) ( PARA * pow((resistance/RZERO), -PARB) );
+  resistance = (( 1023.0f / (float) val ) * 5.0f - 1.0f) * RLOAD;
+
+  return (int) ( PARA * pow((resistance / RZERO), -PARB) );
 }
 
 void ICACHE_RAM_ATTR ISR_notifyOnSmoke()
 {
-  #if (SIMULATE_SMOKE_LEVEL_TEST)
-    gasValue = SIMULATE_SMOKE_LEVEL;
-  #else
-    gasValue = getPPM(MQ135_PIN);
-  #endif
+#if (SIMULATE_SMOKE_LEVEL_TEST)
+  gasValue = SIMULATE_SMOKE_LEVEL;
+#else
+  gasValue = getPPM(MQ135_PIN);
+#endif
 
-  #if (LOCAL_DEBUG > 0)
-    if (alarmFlagSmoke)
-      Serial.println("iAlert: testSmokeAlarm = "  + String(testSmokeAlarm? "ON" : "OFF"));
-  #endif
-  
+#if (LOCAL_DEBUG > 0)
+  if (alarmFlagSmoke)
+    Serial.println("iAlert: testSmokeAlarm = "  + String(testSmokeAlarm ? "ON" : "OFF"));
+#endif
+
   if ( ((gasValue > GAS_HIGH_ALARM) || testSmokeAlarm) && !alarmFlagSmoke)
   {
     alarmFlagSmoke = true;
 
-    #if (LOCAL_DEBUG > 0)
-      Serial.println("iAlert: SMOKE");
-    #endif
+#if (LOCAL_DEBUG > 0)
+    Serial.println("iAlert: SMOKE");
+#endif
   }
   else if ( alarmFlagSmoke && ( (gasValue < GAS_LOW_RESET) && !testSmokeAlarm ) )
   {
     alarmFlagSmoke = false;
 
-    #if (LOCAL_DEBUG > 0)
-      Serial.println("iAlert: SMOKE reset : GAS_LOW_RESET = " + String(GAS_LOW_RESET));
-    #endif
+#if (LOCAL_DEBUG > 0)
+    Serial.println("iAlert: SMOKE reset : GAS_LOW_RESET = " + String(GAS_LOW_RESET));
+#endif
   }
 }
 
@@ -385,38 +385,38 @@ void ICACHE_RAM_ATTR ISR_checkingFireAndSmoke()
   ISR_notifyOnSmoke();
 }
 
-// Use relay or direct digital control to drive Alarm Horn or an active buzzer 
+// Use relay or direct digital control to drive Alarm Horn or an active buzzer
 // analogWrite() / AnalogWriteFreq() somehow interferes with the ISR-based Timer
 void ISR_playAlarmSound()
 {
   static bool buzzerON = false;
   static bool soundAlarm;
-  
+
   soundAlarm = buzzerEnable && ( alarmFlagSmoke || alarmFlagFire );
 
-  // Change sound every 0.5s 
+  // Change sound every 0.5s
   if ( soundAlarm && !buzzerON )
   {
-    #if (LOCAL_DEBUG > 0)
-      Serial.println("Buzzer ON");
-    #endif
+#if (LOCAL_DEBUG > 0)
+    Serial.println("Buzzer ON");
+#endif
     digitalWrite(BUZZER_PIN, HIGH);
     buzzerON = true;
   }
   else if ( soundAlarm && buzzerON )
   {
-    #if (LOCAL_DEBUG > 0)
-      Serial.println("Buzzer OFF");
-    #endif
+#if (LOCAL_DEBUG > 0)
+    Serial.println("Buzzer OFF");
+#endif
     digitalWrite(BUZZER_PIN, LOW);
     buzzerON = false;
-  }  
+  }
   else if (buzzerON)
   {
-    #if (LOCAL_DEBUG > 0)
-      Serial.println("Buzzer OFF");
-    #endif
-    
+#if (LOCAL_DEBUG > 0)
+    Serial.println("Buzzer OFF");
+#endif
+
     digitalWrite(BUZZER_PIN, LOW);
     buzzerON = false;
   }
@@ -427,37 +427,37 @@ void heartBeatPrint(void)
   static int num = 1;
 
   Serial.print("B");
-  
-  if (num == 80) 
+
+  if (num == 80)
   {
     Serial.println();
     num = 1;
   }
-  else if (num++ % 10 == 0) 
+  else if (num++ % 10 == 0)
   {
     Serial.print(" ");
   }
-} 
+}
 
 void BlynkNotify(void)
 {
   heartBeatPrint();
-    
+
   if (alarmFlagFire)
   {
-    #if (LOCAL_DEBUG > 0)
-      Serial.println("Blynk Notify Alert: FIRE");
-    #endif
-    
+#if (LOCAL_DEBUG > 0)
+    Serial.println("Blynk Notify Alert: FIRE");
+#endif
+
     Blynk.notify("Alert: FIRE");
   }
 
   if (alarmFlagSmoke)
   {
-    #if (LOCAL_DEBUG > 0)
-      Serial.println("Blynk Notify Alert: SMOKE");
-    #endif
-    
+#if (LOCAL_DEBUG > 0)
+    Serial.println("Blynk Notify Alert: SMOKE");
+#endif
+
     Blynk.notify("Alert: SMOKE");
   }
 }
@@ -493,34 +493,34 @@ void setup()
   }
   else
     Serial.println("Can't set ITimer correctly. Select another freq. or interval");
-  
+
   // This is critical task, to be serviced by ISR-timer
-  ISR_Timer.setInterval(CHECK_FIRE_AND_SMOKE_INTERVAL_MS, ISR_checkingFireAndSmoke);  
+  ISR_Timer.setInterval(CHECK_FIRE_AND_SMOKE_INTERVAL_MS, ISR_checkingFireAndSmoke);
   // This is critical task, to be serviced by ISR-timer
   ISR_Timer.setInterval(PLAY_ALARM_SOUND_INTERVAL_MS, ISR_playAlarmSound);
 
   // This is non-critical GUI task, to be serviced by software timer
-  blynkTimer.setInterval(CHECK_FIRE_AND_SMOKE_INTERVAL_MS, checkingFireAndSmoke);  
+  blynkTimer.setInterval(CHECK_FIRE_AND_SMOKE_INTERVAL_MS, checkingFireAndSmoke);
   // Every Minute to send Blynk notify
   // This is just GUI purpose, and we can just usse software-based timer, such as BlynkTimer
-  // Anyway, if there is no connection to Blynk, there is no use to to Blynk notification  
+  // Anyway, if there is no connection to Blynk, there is no use to to Blynk notification
   blynkTimer.setInterval(BLYNK_NOTIFY_INTERVAL_MS, BlynkNotify);
 
-  #if USE_BLYNK_WM
-    Blynk.begin();
-  #else
-    WiFi.begin(ssid, pass);
-    
-    #if USE_LOCAL_SERVER
-      Blynk.config(auth, server, BLYNK_HARDWARE_PORT);
-    #else
-      Blynk.config(auth);
-    #endif
-    
-    Blynk.connect();
-    if ( Blynk.connected())
-      Serial.println("Connected to Blynk");   
-  #endif
+#if USE_BLYNK_WM
+  Blynk.begin();
+#else
+  WiFi.begin(ssid, pass);
+
+#if USE_LOCAL_SERVER
+  Blynk.config(auth, server, BLYNK_HARDWARE_PORT);
+#else
+  Blynk.config(auth);
+#endif
+
+  Blynk.connect();
+  if ( Blynk.connected())
+    Serial.println("Connected to Blynk");
+#endif
 }
 
 void loop()

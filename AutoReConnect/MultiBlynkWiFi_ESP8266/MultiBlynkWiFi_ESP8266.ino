@@ -1,15 +1,15 @@
 /****************************************************************************************************************************
- *  MultiBlynkWiFi_ESP8266.ino
- *  For ESP8266 boards, testing Multi Blynk and Multi WiFi auto-reconnect features of ESP8266WiFi library
- *
- *  Built by Khoi Hoang /https://github.com/khoih-prog/SmallProjects/AutoReConnect
- *  Licensed under MIT license
- *  Version: 1.0.0
- *
- *
- *  Version Modified By   Date      Comments
- *  ------- -----------  ---------- -----------
- *   1.0.0   K Hoang      28/01/2020 Initial coding
+    MultiBlynkWiFi_ESP8266.ino
+    For ESP8266 boards, testing Multi Blynk and Multi WiFi auto-reconnect features of ESP8266WiFi library
+
+    Built by Khoi Hoang /https://github.com/khoih-prog/SmallProjects/AutoReConnect
+    Licensed under MIT license
+    Version: 1.0.0
+
+
+    Version Modified By   Date      Comments
+    ------- -----------  ---------- -----------
+     1.0.0   K Hoang      28/01/2020 Initial coding
  *****************************************************************************************************************************/
 
 #ifndef ESP8266
@@ -139,17 +139,17 @@ void heartBeatPrint(void)
   {
     Serial.print("F");
   }
-  
-  if (num == 80) 
+
+  if (num == 80)
   {
     Serial.println();
     num = 1;
   }
-  else if (num++ % 10 == 0) 
+  else if (num++ % 10 == 0)
   {
     Serial.print(" ");
   }
-} 
+}
 
 void check_status()
 {
@@ -200,6 +200,6 @@ void loop()
 
   if ( Blynk.connected() )
     Blynk.run();
-    
+
   check_status();
 }

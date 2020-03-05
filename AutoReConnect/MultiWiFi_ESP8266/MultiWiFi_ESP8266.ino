@@ -1,15 +1,15 @@
 /****************************************************************************************************************************
- *  MultiWiFi_ESP8266.ino
- *  For ESP8266 boards, testing Multi WiFi auto-reconnect features of ESP8266WiFi library
- *
- *  Built by Khoi Hoang /https://github.com/khoih-prog/SmallProjects/AutoReConnect
- *  Licensed under MIT license
- *  Version: 1.0.0
- *
- *
- *  Version Modified By   Date      Comments
- *  ------- -----------  ---------- -----------
- *   1.0.0   K Hoang      28/01/2020 Initial coding
+    MultiWiFi_ESP8266.ino
+    For ESP8266 boards, testing Multi WiFi auto-reconnect features of ESP8266WiFi library
+
+    Built by Khoi Hoang /https://github.com/khoih-prog/SmallProjects/AutoReConnect
+    Licensed under MIT license
+    Version: 1.0.0
+
+
+    Version Modified By   Date      Comments
+    ------- -----------  ---------- -----------
+     1.0.0   K Hoang      28/01/2020 Initial coding
  *****************************************************************************************************************************/
 
 #ifndef ESP8266
@@ -29,7 +29,7 @@ typedef struct
 {
   char ssid[SSID_MAX_LEN + 1];
   char pass[PASS_MAX_LEN + 1];
-}  WiFi_Credentials; 
+}  WiFi_Credentials;
 
 WiFi_Credentials WiFi_Creds[] =
 {

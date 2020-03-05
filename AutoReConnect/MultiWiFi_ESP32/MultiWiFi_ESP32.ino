@@ -1,15 +1,15 @@
 /****************************************************************************************************************************
- *  MultiWiFi_ESP32.ino
- *  For ESP32 boards, testing Multi WiFi auto-reconnect features of ESP32 WiFi library
- *
- *  Built by Khoi Hoang /https://github.com/khoih-prog/SmallProjects/AutoReConnect
- *  Licensed under MIT license
- *  Version: 1.0.0
- *
- *
- *  Version Modified By   Date      Comments
- *  ------- -----------  ---------- -----------
- *   1.0.0   K Hoang      28/01/2020 Initial coding
+    MultiWiFi_ESP32.ino
+    For ESP32 boards, testing Multi WiFi auto-reconnect features of ESP32 WiFi library
+
+    Built by Khoi Hoang /https://github.com/khoih-prog/SmallProjects/AutoReConnect
+    Licensed under MIT license
+    Version: 1.0.0
+
+
+    Version Modified By   Date      Comments
+    ------- -----------  ---------- -----------
+     1.0.0   K Hoang      28/01/2020 Initial coding
  *****************************************************************************************************************************/
 
 #ifndef ESP32
