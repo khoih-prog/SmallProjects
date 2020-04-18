@@ -1,5 +1,10 @@
 ## Small Projects to demonstrate the usage of ISR-based timers for ESP8266, ESP32 and Arduino Mega, Nano, etc.
 
+[![GitHub release](https://img.shields.io/github/release/khoih-prog/SmallProjects.svg)](https://github.com/khoih-prog/SmallProjects/releases)
+[![GitHub](https://img.shields.io/github/license/mashape/apistatus.svg)](https://github.com/khoih-prog/SmallProjects/blob/master/LICENSE)
+[![contributions welcome](https://img.shields.io/badge/contributions-welcome-brightgreen.svg?style=flat)](#Contributing)
+[![GitHub issues](https://img.shields.io/github/issues/khoih-prog/SmallProjects.svg)](http://github.com/khoih-prog/SmallProjects/issues)
+
 ### ISR-based Fire Smoke Alarm demonstrate how to use ESP8266TimerInterrupt, ESP32TimerInterrupt and TimerInterrupt Library
 
 These are examples how to use, design and convert the code from normal `software timer` to `ISR-based timer`.
