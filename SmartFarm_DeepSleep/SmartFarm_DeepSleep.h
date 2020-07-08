@@ -1,40 +1,42 @@
 /****************************************************************************************************************************
-   SmartFarm_DeepSleep.ino
-   SmartFarm for ESP32 and ESP8266, using configurable DeepSleep, and many other parameters
-   For ESP8266 / ESP32 boards
-   Written by Khoi Hoang
-   Copyright (c) 2019 Khoi Hoang
-
-   Built by Khoi Hoang https://github.com/khoih-prog/SmallProjects/SmartFarm_DeepSleep
-   Licensed under MIT license
-   Version: 1.0.2
-
-   Now we can use these new 16 ISR-based timers, while consuming only 1 hardware Timer.
-   Their independently-selected, maximum interval is practically unlimited (limited only by unsigned long miliseconds)
-   The accuracy is nearly perfect compared to software timers. The most important feature is they're ISR-based timers
-   Therefore, their executions are not blocked by bad-behaving functions / tasks.
-   This important feature is absolutely necessary for mission-critical tasks.
-
-   Notes:
-   Special design is necessary to share data between interrupt code and the rest of your program.
-   Variables usually need to be "volatile" types. Volatile tells the compiler to avoid optimizations that assume
-   variable can not spontaneously change. Because your function may change variables while your program is using them,
-   the compiler needs this hint. But volatile alone is often not enough.
-   When accessing shared variables, usually interrupts must be disabled. Even with volatile,
-   if the interrupt changes a multi-byte variable between a sequence of instructions, it can be read incorrectly.
-   If your data is multiple variables, such as an array and a count, usually interrupts need to be disabled
-   or the entire sequence of your code which accesses the data.
-
-   Version Modified By   Date      Comments
-   ------- -----------  ---------- -----------
-    1.0.0   K Hoang     18/09/2019 Initial coding for ESP32
-    1.0.1   K Hoang     25/09/2019 Add ESP8266 and SSL support
-    1.0.2   K Hoang     20/10/2019 Use Blynk_WM for easy management and test
+ * SmartFarm_DeepSleep.ino
+ * SmartFarm for ESP32 and ESP8266, using configurable DeepSleep, and many other parameters
+ * For ESP8266 / ESP32 boards
+ * Written by Khoi Hoang
+ * Copyright (c) 2019 Khoi Hoang
+ * 
+ * Built by Khoi Hoang https://github.com/khoih-prog/SmallProjects/SmartFarm_DeepSleep
+ * Licensed under MIT license
+ * Version: 1.0.4
+ *
+ * Now we can use these new 16 ISR-based timers, while consuming only 1 hardware Timer.
+ * Their independently-selected, maximum interval is practically unlimited (limited only by unsigned long miliseconds)
+ * The accuracy is nearly perfect compared to software timers. The most important feature is they're ISR-based timers
+ * Therefore, their executions are not blocked by bad-behaving functions / tasks.
+ * This important feature is absolutely necessary for mission-critical tasks.
+ *
+ * Notes:
+ * Special design is necessary to share data between interrupt code and the rest of your program.
+ * Variables usually need to be "volatile" types. Volatile tells the compiler to avoid optimizations that assume 
+ * variable can not spontaneously change. Because your function may change variables while your program is using them, 
+ * the compiler needs this hint. But volatile alone is often not enough.
+ * When accessing shared variables, usually interrupts must be disabled. Even with volatile, 
+ * if the interrupt changes a multi-byte variable between a sequence of instructions, it can be read incorrectly. 
+ * If your data is multiple variables, such as an array and a count, usually interrupts need to be disabled 
+ * or the entire sequence of your code which accesses the data.
+ *
+ * Version Modified By   Date      Comments
+ * ------- -----------  ---------- -----------
+ *  1.0.0   K Hoang     18/09/2019 Initial coding for ESP32
+ *  1.0.1   K Hoang     25/09/2019 Add ESP8266 and SSL support
+ *  1.0.2   K Hoang     20/10/2019 Use Blynk_WM for easy management and test
+ *  1.0.3   K Hoang     07/01/2020 Use Blynk_WM v1.0.4 with personalized DHCP hostname
+ *  1.0.4   K Hoang     07/07/2020 Use new Blynk_WM v1.0.16+ with new USE_DYNAMIC_PARAMETERS and LOAD_DEFAULT_CONFIG_DATA
 *****************************************************************************************************************************/
 
 /* For ESP32:
-   Compile using: ESP32 Dev Module, 921600, 160MHz, 4M (1M SPIFFS), QIO, Flash 80MHz
-   For ESP32 SSL, use <certs/letsencrypt_pem.h> for BLYNK_SSL_USE_LETSENCRYPT and <certs/blynkcloud_pem.h> if NO BLYNK_SSL_USE_LETSENCRYPT
+ * Compile using: ESP32 Dev Module, 921600, 160MHz, 4M (1M SPIFFS), QIO, Flash 80MHz
+ * For ESP32 SSL, use <certs/letsencrypt_pem.h> for BLYNK_SSL_USE_LETSENCRYPT and <certs/blynkcloud_pem.h> if NO BLYNK_SSL_USE_LETSENCRYPT
      #if defined(BLYNK_SSL_USE_LETSENCRYPT)
       static const char BLYNK_DEFAULT_ROOT_CA[] =
       #include <certs/letsencrypt_pem.h>
@@ -43,24 +45,24 @@
       #include <certs/blynkcloud_pem.h>
     #endif
 
-   To create file blynkcloud_pem.h/letsencrypt_pem.h from localServer certificate file fullchain.crt (copy and add ",",\n,;
-   similar way to original file. This file is OK to use (both blynkcloud_pem.h/letsencrypt_pem.h are the same)
+   To create file blynkcloud_pem.h/letsencrypt_pem.h from localServer certificate file fullchain.crt (copy and add ",",\n,; 
+   similar way to original file. This file is OK to use (both blynkcloud_pem.h/letsencrypt_pem.h are the same) 
    even if BLYNK_SSL_USE_LETSENCRYPT is defined or not.
 
    For ESP8266-based:
-
-   ESP8266 DEEPSLEEP
-
-   1) To put the ESP8266 in deep sleep mode, use ESP.deepSleep(uS) and pass as argument sleep time in microseconds.
-   D0/GPIO16 must be connected to reset (RST) pin so the ESP8266 is able to wake up.
-   To put the ESP8266 in deep sleep mode for an indefinite period of time use ESP.deepSleep(0).
-   The ESP8266 will wake up when the RST pin receives a LOW signal.
-
-   2) Uploading program (IMPORTANT !!!)
-   To upload program in middle of deepsleep, or after power off/on while in deepsleep
-   We have to press RST button to wake the ESP8266 up to communicate with programmer
-   or remove the jumper wire between RST and WAKE D0/GPIO16
-*/
+   
+ * ESP8266 DEEPSLEEP
+ * 
+ * 1) To put the ESP8266 in deep sleep mode, use ESP.deepSleep(uS) and pass as argument sleep time in microseconds. 
+ * D0/GPIO16 must be connected to reset (RST) pin so the ESP8266 is able to wake up.
+ * To put the ESP8266 in deep sleep mode for an indefinite period of time use ESP.deepSleep(0). 
+ * The ESP8266 will wake up when the RST pin receives a LOW signal.
+ * 
+ * 2) Uploading program (IMPORTANT !!!)
+ * To upload program in middle of deepsleep, or after power off/on while in deepsleep
+ * We have to press RST button to wake the ESP8266 up to communicate with programmer
+ * or remove the jumper wire between RST and WAKE D0/GPIO16
+ */
 
 #define BLYNK_PRINT Serial
 
@@ -345,3 +347,44 @@ String cloudBlynkServer = "yourname.duckdns.org";
 #define DEBUG_PRINTLN(x) {}
 
 #endif
+
+#if USE_BLYNK_WM
+// To use with new Blynk_WM v1.0.16+ with new USE_DYNAMIC_PARAMETERS and LOAD_DEFAULT_CONFIG_DATA
+// To disable LOAD_DEFAULT_CONFIG_DATA
+bool LOAD_DEFAULT_CONFIG_DATA = false;
+
+Blynk_WM_Configuration defaultConfig =
+{
+  //char header[16], dummy, not used
+#if USE_SSL  
+  "SSL",
+#else
+  "NonSSL",
+#endif
+  //WiFi_Credentials  WiFi_Creds  [NUM_WIFI_CREDENTIALS]
+  //WiFi_Creds.wifi_ssid and WiFi_Creds.wifi_pw
+  "SSID1", "password1",
+  "SSID2", "password2",
+  // Blynk_Credentials Blynk_Creds [NUM_BLYNK_CREDENTIALS];
+  // Blynk_Creds.blynk_server and Blynk_Creds.blynk_token
+  "account.ddns.net",     "token",
+  "account.duckdns.org",  "token1", 
+  //int  blynk_port;
+#if USE_SSL
+  9443,
+#else
+  8080,
+#endif
+  //char board_name     [24];
+  "DeepSleep",
+  //int  checkSum, dummy, not used
+  0
+};
+
+// To disable USE_DYNAMIC_PARAMETERS
+#define USE_DYNAMIC_PARAMETERS      false
+MenuItem myMenuItems [] = {};
+uint16_t NUM_MENU_ITEMS = 0;
+//////
+
+#endif    //USE_BLYNK_WM

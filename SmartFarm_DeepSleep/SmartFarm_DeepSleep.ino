@@ -1,47 +1,49 @@
 /****************************************************************************************************************************
-   SmartFarm_DeepSleep.ino
-   SmartFarm for ESP32 and ESP8266, using configurable DeepSleep, and many other parameters
-   For ESP8266 / ESP32 boards
-   Written by Khoi Hoang
-   Copyright (c) 2019 Khoi Hoang
-
-   Built by Khoi Hoang https://github.com/khoih-prog/SmallProjects/SmartFarm_DeepSleep
-   Licensed under MIT license
-   Version: 1.0.2
-
-   Now we can use these new 16 ISR-based timers, while consuming only 1 hardware Timer.
-   Their independently-selected, maximum interval is practically unlimited (limited only by unsigned long miliseconds)
-   The accuracy is nearly perfect compared to software timers. The most important feature is they're ISR-based timers
-   Therefore, their executions are not blocked by bad-behaving functions / tasks.
-   This important feature is absolutely necessary for mission-critical tasks.
-
-   Notes:
-   Special design is necessary to share data between interrupt code and the rest of your program.
-   Variables usually need to be "volatile" types. Volatile tells the compiler to avoid optimizations that assume
-   variable can not spontaneously change. Because your function may change variables while your program is using them,
-   the compiler needs this hint. But volatile alone is often not enough.
-   When accessing shared variables, usually interrupts must be disabled. Even with volatile,
-   if the interrupt changes a multi-byte variable between a sequence of instructions, it can be read incorrectly.
-   If your data is multiple variables, such as an array and a count, usually interrupts need to be disabled
-   or the entire sequence of your code which accesses the data.
-
-   Version Modified By   Date      Comments
-   ------- -----------  ---------- -----------
-    1.0.0   K Hoang     18/09/2019 Initial coding for ESP32
-    1.0.1   K Hoang     25/09/2019 Add ESP8266 and SSL support
-    1.0.2   K Hoang     20/10/2019 Use Blynk_WM for easy management and test
+ * SmartFarm_DeepSleep.ino
+ * SmartFarm for ESP32 and ESP8266, using configurable DeepSleep, and many other parameters
+ * For ESP8266 / ESP32 boards
+ * Written by Khoi Hoang
+ * Copyright (c) 2019 Khoi Hoang
+ * 
+ * Built by Khoi Hoang https://github.com/khoih-prog/SmallProjects/SmartFarm_DeepSleep
+ * Licensed under MIT license
+ * Version: 1.0.4
+ *
+ * Now we can use these new 16 ISR-based timers, while consuming only 1 hardware Timer.
+ * Their independently-selected, maximum interval is practically unlimited (limited only by unsigned long miliseconds)
+ * The accuracy is nearly perfect compared to software timers. The most important feature is they're ISR-based timers
+ * Therefore, their executions are not blocked by bad-behaving functions / tasks.
+ * This important feature is absolutely necessary for mission-critical tasks.
+ *
+ * Notes:
+ * Special design is necessary to share data between interrupt code and the rest of your program.
+ * Variables usually need to be "volatile" types. Volatile tells the compiler to avoid optimizations that assume 
+ * variable can not spontaneously change. Because your function may change variables while your program is using them, 
+ * the compiler needs this hint. But volatile alone is often not enough.
+ * When accessing shared variables, usually interrupts must be disabled. Even with volatile, 
+ * if the interrupt changes a multi-byte variable between a sequence of instructions, it can be read incorrectly. 
+ * If your data is multiple variables, such as an array and a count, usually interrupts need to be disabled 
+ * or the entire sequence of your code which accesses the data.
+ *
+ * Version Modified By   Date      Comments
+ * ------- -----------  ---------- -----------
+ *  1.0.0   K Hoang     18/09/2019 Initial coding for ESP32
+ *  1.0.1   K Hoang     25/09/2019 Add ESP8266 and SSL support
+ *  1.0.2   K Hoang     20/10/2019 Use Blynk_WM for easy management and test
+ *  1.0.3   K Hoang     07/01/2020 Use Blynk_WM v1.0.4 with personalized DHCP hostname
+ *  1.0.4   K Hoang     07/07/2020 Use new Blynk_WM v1.0.16+ with new USE_DYNAMIC_PARAMETERS and LOAD_DEFAULT_CONFIG_DATA
  *****************************************************************************************************************************/
 
 /****************************************************************************************************************************
-   To use ESP32 Dev Module, CPU 240MHz (WiFi/BT), QIO, Flash 4MB/80MHz, Upload 921600
-   KH Mods in .../hardware/espressif/esp32/libraries/WiFi/src/WiFiScan.cpp
-   KH Mods in ~/Arduino/libraries/WiFiManager/WiFiManager.cpp
-   Later check why using latest esp32 (arduino-esp32-master) -> crash. Already fixed in WiFiManager.h/cpp
-
-   Issues:
-   1) SPIFFS OK now. Follow intruction at  https://github.com/me-no-dev/arduino-esp32fs-plugin
-      To upload firmware, press BOOT button just after uploading started.
-      Press EN button if booting can't connect to WiFi
+ * To use ESP32 Dev Module, CPU 240MHz (WiFi/BT), QIO, Flash 4MB/80MHz, Upload 921600
+ * KH Mods in .../hardware/espressif/esp32/libraries/WiFi/src/WiFiScan.cpp
+ * KH Mods in ~/Arduino/libraries/WiFiManager/WiFiManager.cpp
+ * Later check why using latest esp32 (arduino-esp32-master) -> crash. Already fixed in WiFiManager.h/cpp
+ *
+ * Issues:
+ * 1) SPIFFS OK now. Follow intruction at  https://github.com/me-no-dev/arduino-esp32fs-plugin
+ *    To upload firmware, press BOOT button just after uploading started.
+ *    Press EN button if booting can't connect to WiFi
 *****************************************************************************************************************************/
 
 #include "SmartFarm_DeepSleep.h"
@@ -53,29 +55,29 @@
 
 #if USE_BLYNK_WM
 
-String ssid = "";
+  String ssid = "";
 
 #else
-#define SMART_FARM_BOARD_NO      6
+  #define SMART_FARM_BOARD_NO      6
 
-#if (SMART_FARM_BOARD_NO == 1)
-String blynk_token      = "board1-token";
-#elif (SMART_FARM_BOARD_NO == 2)
-String blynk_token      = "board2-token";
-#elif (SMART_FARM_BOARD_NO == 3)
-String blynk_token      = "board3-token";
-#elif (SMART_FARM_BOARD_NO == 4)
-String blynk_token      = "board4-token";
-#elif (SMART_FARM_BOARD_NO == 5)
-String blynk_token      = "board5-token";
-#elif (SMART_FARM_BOARD_NO == 6)
-String blynk_token      = "board6-token";
+  #if (SMART_FARM_BOARD_NO == 1)
+  String blynk_token      = "board1-token";
+  #elif (SMART_FARM_BOARD_NO == 2)
+  String blynk_token      = "board2-token";
+  #elif (SMART_FARM_BOARD_NO == 3)
+  String blynk_token      = "board3-token";
+  #elif (SMART_FARM_BOARD_NO == 4)
+  String blynk_token      = "board4-token";
+  #elif (SMART_FARM_BOARD_NO == 5)
+  String blynk_token      = "board5-token";
+  #elif (SMART_FARM_BOARD_NO == 6)
+  String blynk_token      = "board6-token";
+  #endif
+
+  String ssid = "****";
+  String pass = "****";
 #endif
-
-String ssid = "****";
-String pass = "****";
-#endif
-
+  
 int16_t curr_RSSI;
 int16_t percent_RSSI;
 
@@ -188,65 +190,65 @@ void clockDisplay()
 }
 
 #if (USE_DEEPSLEEP)
-// 2 days
-#define DAY_IN_MINS        1440
-uint64_t deepSleepMax_mins =  (2 * DAY_IN_MINS);
+  // 2 days
+  #define DAY_IN_MINS        1440 
+  uint64_t deepSleepMax_mins =  (2 * DAY_IN_MINS);
 
-#define USE_BITFIELD    true
-#if USE_BITFIELD
-/* define a structure with bit fields */
-struct RTC_BoolData
-{
-  uint32_t reserved         : 29;
-  uint32_t MW33             : 1;
-  uint32_t sensorCapacitive : 1;
-  uint32_t USE_CELCIUS      : 1;
-};
-#endif
+  #define USE_BITFIELD    true
+  #if USE_BITFIELD
+  /* define a structure with bit fields */
+  struct RTC_BoolData
+  {
+    uint32_t reserved         : 29;
+    uint32_t MW33             : 1;
+    uint32_t sensorCapacitive : 1;
+    uint32_t USE_CELCIUS      : 1;       
+  };
+  #endif
+  
+  #if (USE_ESP32)
+  RTC_DATA_ATTR uint32_t              bootCount = 0;
+  RTC_DATA_ATTR uint32_t              RTC_DEEPSLEEP_INTERVAL_FACTOR;
+  RTC_DATA_ATTR uint32_t              RTC_TIME_TO_DEEPSLEEP;
+  RTC_DATA_ATTR uint32_t              RTC_DRY_SOIL;
+  RTC_DATA_ATTR DHTesp::DHT_MODEL_t   RTC_DHTTYPE;
+  #if USE_BITFIELD
+  RTC_DATA_ATTR RTC_BoolData          RTC_Data;
+  #else
+  // Better to use bit field for boolean data
+  RTC_DATA_ATTR boolean               RTC_MW33;
+  RTC_DATA_ATTR boolean               RTC_sensorCapacitive;
+  RTC_DATA_ATTR boolean               RTC_USE_CELCIUS;
+  #endif
+  
+  #else //(USE_ESP32)
+  /*
+  ESP.rtcUserMemoryWrite(offset, &data, sizeof(data)) and ESP.rtcUserMemoryRead(offset, &data, sizeof(data)) allow data to be stored in and 
+  retrieved from the RTC user memory of the chip respectively. offset is measured in blocks of 4 bytes and can range from 0 to 127 blocks 
+  (total size of RTC memory is 512 bytes). data should be 4-byte aligned. The stored data can be retained between deep sleep cycles, but might 
+  be lost after power cycling the chip. Data stored in the first 32 blocks will be lost after performing an OTA update, because they are used by 
+  the Core internals.   
+  */
+  #define bootCountOffset     32
+  uint32_t bootCount = 0;
 
-#if (USE_ESP32)
-RTC_DATA_ATTR uint32_t              bootCount = 0;
-RTC_DATA_ATTR uint32_t              RTC_DEEPSLEEP_INTERVAL_FACTOR;
-RTC_DATA_ATTR uint32_t              RTC_TIME_TO_DEEPSLEEP;
-RTC_DATA_ATTR uint32_t              RTC_DRY_SOIL;
-RTC_DATA_ATTR DHTesp::DHT_MODEL_t   RTC_DHTTYPE;
-#if USE_BITFIELD
-RTC_DATA_ATTR RTC_BoolData          RTC_Data;
-#else
-// Better to use bit field for boolean data
-RTC_DATA_ATTR boolean               RTC_MW33;
-RTC_DATA_ATTR boolean               RTC_sensorCapacitive;
-RTC_DATA_ATTR boolean               RTC_USE_CELCIUS;
-#endif
+  uint32_t  RTC_DEEPSLEEP_INTERVAL_FACTOR;
+  uint32_t  RTC_TIME_TO_DEEPSLEEP;
+  uint32_t  RTC_DRY_SOIL;
+  uint32_t  RTC_DHTTYPE;
 
-#else //(USE_ESP32)
-/*
-  ESP.rtcUserMemoryWrite(offset, &data, sizeof(data)) and ESP.rtcUserMemoryRead(offset, &data, sizeof(data)) allow data to be stored in and
-  retrieved from the RTC user memory of the chip respectively. offset is measured in blocks of 4 bytes and can range from 0 to 127 blocks
-  (total size of RTC memory is 512 bytes). data should be 4-byte aligned. The stored data can be retained between deep sleep cycles, but might
-  be lost after power cycling the chip. Data stored in the first 32 blocks will be lost after performing an OTA update, because they are used by
-  the Core internals.
-*/
-#define bootCountOffset     32
-uint32_t bootCount = 0;
-
-uint32_t  RTC_DEEPSLEEP_INTERVAL_FACTOR;
-uint32_t  RTC_TIME_TO_DEEPSLEEP;
-uint32_t  RTC_DRY_SOIL;
-uint32_t  RTC_DHTTYPE;
-
-#if USE_BITFIELD
-/* define a structure with bit fields */
-RTC_BoolData RTC_Data;
-#else
-// Better to use bit field for boolean data
-uint32_t  RTC_MW33;
-uint32_t  RTC_sensorCapacitive;
-uint32_t  RTC_USE_CELCIUS;
-#endif
-
-#endif  //(USE_ESP32)
-
+  #if USE_BITFIELD
+  /* define a structure with bit fields */
+  RTC_BoolData RTC_Data;
+  #else
+  // Better to use bit field for boolean data
+  uint32_t  RTC_MW33;
+  uint32_t  RTC_sensorCapacitive;
+  uint32_t  RTC_USE_CELCIUS;
+  #endif
+  
+  #endif  //(USE_ESP32)
+  
 #endif  //(USE_DEEPSLEEP)
 
 
@@ -261,9 +263,9 @@ BLYNK_CONNECTED()
   Blynk.virtualWrite(BLYNK_PIN_IP, get_last_ip());
 
 #if (USE_DEEPSLEEP)
-  Blynk.setProperty(BLYNK_PIN_TIME_TO_DEEPSLEEP, "max", deepSleepMax_mins);
+  Blynk.setProperty(BLYNK_PIN_TIME_TO_DEEPSLEEP, "max", deepSleepMax_mins);  
   Blynk.virtualWrite(BLYNK_PIN_DEEPSLEEP_BOOTCOUNT, String(bootCount));
-
+  
 #endif
 
   //change color to GREEN
@@ -584,7 +586,7 @@ BLYNK_WRITE(BLYNK_PIN_TIME_TO_DEEPSLEEP)
   {
     TIME_TO_DEEPSLEEP = param.asInt();
 
-    // Force deepsleep time between 1-2 days (1 min -> 2 days/2880 minutes).
+    // Force deepsleep time between 1-2 days (1 min -> 2 days/2880 minutes). 
     // TIME_TO_DEEPSLEEP = 0 => No DeepSleep
     if (TIME_TO_DEEPSLEEP > deepSleepMax_mins)
     {
@@ -1008,17 +1010,17 @@ void deepsleep()
     RTC_DRY_SOIL                  = DRY_SOIL;
     RTC_DHTTYPE                   = DHTTYPE;
 
-#if USE_BITFIELD
-    RTC_Data.MW33             = (uint32_t) MW33;
-    RTC_Data.sensorCapacitive = (uint32_t) sensorCapacitive;
-    RTC_Data.USE_CELCIUS      = (uint32_t) USE_CELCIUS;
-#else
-    // Better to use bit field for boolean data
-    RTC_MW33                      = MW33;
-    RTC_sensorCapacitive          = sensorCapacitive;
-    RTC_USE_CELCIUS               = USE_CELCIUS;
-#endif
-
+    #if USE_BITFIELD
+      RTC_Data.MW33             = (uint32_t) MW33;
+      RTC_Data.sensorCapacitive = (uint32_t) sensorCapacitive;
+      RTC_Data.USE_CELCIUS      = (uint32_t) USE_CELCIUS;
+    #else
+      // Better to use bit field for boolean data
+      RTC_MW33                      = MW33;
+      RTC_sensorCapacitive          = sensorCapacitive;
+      RTC_USE_CELCIUS               = USE_CELCIUS;  
+    #endif
+       
     esp_sleep_enable_timer_wakeup(uS_TO_SLEEP); // Setup wake up interval
     delay(500);
     esp_deep_sleep_start(); // Start deep sleep
@@ -1029,35 +1031,35 @@ void deepsleep()
     ESP.rtcUserMemoryWrite(bootCountOffset + sizeof(bootCount) + sizeof(DEEPSLEEP_INTERVAL_FACTOR), &TIME_TO_DEEPSLEEP, sizeof(TIME_TO_DEEPSLEEP));
 
     ESP.rtcUserMemoryWrite(bootCountOffset + sizeof(bootCount) + sizeof(DEEPSLEEP_INTERVAL_FACTOR) + sizeof(TIME_TO_DEEPSLEEP), &DRY_SOIL, sizeof(DRY_SOIL));
-
+    
     RTC_DHTTYPE = (uint32_t) DHTTYPE;
-    ESP.rtcUserMemoryWrite(bootCountOffset + sizeof(bootCount) + sizeof(DEEPSLEEP_INTERVAL_FACTOR) + sizeof(TIME_TO_DEEPSLEEP) +
-                           sizeof(DRY_SOIL), &RTC_DHTTYPE, sizeof(RTC_DHTTYPE));
+    ESP.rtcUserMemoryWrite(bootCountOffset + sizeof(bootCount) + sizeof(DEEPSLEEP_INTERVAL_FACTOR) + sizeof(TIME_TO_DEEPSLEEP) + 
+            sizeof(DRY_SOIL), &RTC_DHTTYPE, sizeof(RTC_DHTTYPE));
 
 
-#if USE_BITFIELD
-    RTC_Data.MW33             = (uint32_t) MW33;
-    RTC_Data.sensorCapacitive = (uint32_t) sensorCapacitive;
-    RTC_Data.USE_CELCIUS      = (uint32_t) USE_CELCIUS;
+    #if USE_BITFIELD
+      RTC_Data.MW33             = (uint32_t) MW33;
+      RTC_Data.sensorCapacitive = (uint32_t) sensorCapacitive;
+      RTC_Data.USE_CELCIUS      = (uint32_t) USE_CELCIUS;
+      
+      //uint32_t temp_RTC_Data = (uint32_t) RTC_Data;
+      ESP.rtcUserMemoryWrite(bootCountOffset + sizeof(bootCount) + sizeof(DEEPSLEEP_INTERVAL_FACTOR) + sizeof(TIME_TO_DEEPSLEEP) + 
+        sizeof(DRY_SOIL) + sizeof(RTC_DHTTYPE), (uint32_t *) &RTC_Data, sizeof(uint32_t));
 
-    //uint32_t temp_RTC_Data = (uint32_t) RTC_Data;
-    ESP.rtcUserMemoryWrite(bootCountOffset + sizeof(bootCount) + sizeof(DEEPSLEEP_INTERVAL_FACTOR) + sizeof(TIME_TO_DEEPSLEEP) +
-                           sizeof(DRY_SOIL) + sizeof(RTC_DHTTYPE), (uint32_t *) &RTC_Data, sizeof(uint32_t));
-
-#else
-    RTC_MW33 = (uint32_t) MW33;
-    ESP.rtcUserMemoryWrite(bootCountOffset + sizeof(bootCount) + sizeof(DEEPSLEEP_INTERVAL_FACTOR) + sizeof(TIME_TO_DEEPSLEEP) +
-                           sizeof(DRY_SOIL) + sizeof(RTC_DHTTYPE), &RTC_MW33, sizeof(RTC_MW33));
-
-    RTC_sensorCapacitive = (uint32_t) sensorCapacitive;
-    ESP.rtcUserMemoryWrite(bootCountOffset + sizeof(bootCount) + sizeof(DEEPSLEEP_INTERVAL_FACTOR) + sizeof(TIME_TO_DEEPSLEEP) +
-                           sizeof(DRY_SOIL) + sizeof(RTC_DHTTYPE) + sizeof(RTC_MW33), &RTC_sensorCapacitive, sizeof(RTC_sensorCapacitive));
-
-    RTC_USE_CELCIUS = (uint32_t) USE_CELCIUS;
-    ESP.rtcUserMemoryWrite(bootCountOffset + sizeof(bootCount) + sizeof(DEEPSLEEP_INTERVAL_FACTOR) + sizeof(TIME_TO_DEEPSLEEP) +
-                           sizeof(DRY_SOIL) + sizeof(RTC_DHTTYPE) + sizeof(RTC_MW33) + sizeof(sensorCapacitive), &RTC_USE_CELCIUS, sizeof(RTC_USE_CELCIUS));
-#endif
-
+    #else    
+      RTC_MW33 = (uint32_t) MW33;
+      ESP.rtcUserMemoryWrite(bootCountOffset + sizeof(bootCount) + sizeof(DEEPSLEEP_INTERVAL_FACTOR) + sizeof(TIME_TO_DEEPSLEEP) + 
+              sizeof(DRY_SOIL) + sizeof(RTC_DHTTYPE), &RTC_MW33, sizeof(RTC_MW33));
+  
+      RTC_sensorCapacitive = (uint32_t) sensorCapacitive;     
+      ESP.rtcUserMemoryWrite(bootCountOffset + sizeof(bootCount) + sizeof(DEEPSLEEP_INTERVAL_FACTOR) + sizeof(TIME_TO_DEEPSLEEP) + 
+              sizeof(DRY_SOIL) + sizeof(RTC_DHTTYPE) + sizeof(RTC_MW33), &RTC_sensorCapacitive, sizeof(RTC_sensorCapacitive));
+  
+      RTC_USE_CELCIUS = (uint32_t) USE_CELCIUS;        
+      ESP.rtcUserMemoryWrite(bootCountOffset + sizeof(bootCount) + sizeof(DEEPSLEEP_INTERVAL_FACTOR) + sizeof(TIME_TO_DEEPSLEEP) + 
+              sizeof(DRY_SOIL) + sizeof(RTC_DHTTYPE) + sizeof(RTC_MW33) + sizeof(sensorCapacitive), &RTC_USE_CELCIUS, sizeof(RTC_USE_CELCIUS));        
+    #endif
+    
     delay(500);
     ESP.deepSleep(uS_TO_SLEEP); // Setup wake up interval
 
@@ -1068,7 +1070,7 @@ void deepsleep()
 #if 1 //(DEBUG_LOOP > 1)
   else
     Serial.println("Not entering DeepSleep as TIME_TO_DEEPSLEEP = 0");
-#endif
+#endif  
 }
 
 void safe_deepsleep()
@@ -1115,7 +1117,7 @@ void check_status()
 
   // Send status report every STATUS_REPORT_INTERVAL (10) seconds: we don't need to send updates frequently if there is no status change.
   if ((curr_time > checkstatus_timeout) || (checkstatus_timeout == 0))
-  {
+  {   
 
 #if USE_DEEPSLEEP
     // Check to go to deepsleep every 60x2 = 2 mins if moistNormal
@@ -1123,22 +1125,22 @@ void check_status()
     static ulong deepsleep_timeout = 0;
     static ulong deepsleep_factor  = DEEPSLEEP_INTERVAL_FACTOR;
     static ulong prev_time = 0;
-
+  
     DEEPSLEEP_INTERVAL = (ONE_MINUTE_IN_SEC * DEEPSLEEP_INTERVAL_FACTOR);
-
+  
     // Update deepsleep_timeout when first reset/wakeup or changing DEEPSLEEP_INTERVAL_FACTOR or Time has been synchronized / Blynk just connected
     if ( ((deepsleep_timeout == 0) && (curr_time > 0)) || (deepsleep_factor != DEEPSLEEP_INTERVAL_FACTOR) || ( curr_time > prev_time + 1451602800 ) )
     {
       deepsleep_timeout = curr_time + DEEPSLEEP_INTERVAL;
-
+  
       if (deepsleep_factor != DEEPSLEEP_INTERVAL_FACTOR)
         deepsleep_factor = DEEPSLEEP_INTERVAL_FACTOR;
-
-#if (DEBUG_LOOP > 1)
+  
+  #if (DEBUG_LOOP > 1)
       Serial.printf("check_status: Update deepsleep_timeout => prev_time = %ld, curr_time = %ld, deepsleep_timeout = %ld\n", prev_time, curr_time, deepsleep_timeout);
-#endif
+  #endif  
     }
-
+  
     prev_time = curr_time;
 #endif
 
@@ -1157,21 +1159,21 @@ void check_status()
         Serial.println("Pump ON");
       else
         Serial.println("Pump OFF");
-#endif
+#endif      
       // report status to Blynk
       if (Blynk.connected())
       {
 
-#if USE_ESP32
-        //ESP32 LED_BUILDIN is correct polarity, HIGH to turn ON
-        set_led(HIGH);
-        aux_ticker.once_ms(111, set_led, (byte) LOW);
-#else
-        //ESP8266 LED_BUILDIN is reversed polarity, LOW to turn ON
-        set_led(LOW);
-        aux_ticker.once_ms(111, set_led, (byte) HIGH);
-#endif
-
+        #if USE_ESP32
+          //ESP32 LED_BUILDIN is correct polarity, HIGH to turn ON
+          set_led(HIGH);
+          aux_ticker.once_ms(111, set_led, (byte) LOW);       
+        #else
+          //ESP8266 LED_BUILDIN is reversed polarity, LOW to turn ON
+          set_led(LOW);
+          aux_ticker.once_ms(111, set_led, (byte) HIGH);
+        #endif
+            
 #if (DEBUG_LOOP > 0)
         Serial.println("B");
 #endif
@@ -1271,7 +1273,7 @@ void check_status()
 #if (DEBUG_LOOP > 1)
       else if (DEEPSLEEP_INTERVAL == 0)
         Serial.println("DEEPSLEEP_INTERVAL = 0, don't deepsleep");
-#endif
+#endif      
 #endif    //#if USE_DEEPSLEEP
 
       if (pumpModeAuto)
@@ -1285,12 +1287,12 @@ void check_status()
 
         if ( (alarm_moist_interval != 0)  && (curr_time > checkstatus_moist_alarm_timeout) )
         {
-#if USE_BLYNK_WM
-          String notification = Blynk.getBoardName() + " SoilMoist";
-#else
-          String notification = "SF " + String(SMART_FARM_BOARD_NO) + " SoilMoist";
-#endif
-
+          #if USE_BLYNK_WM
+            String notification = Blynk.getBoardName() + " SoilMoist";
+         #else
+            String notification = "SF " + String(SMART_FARM_BOARD_NO) + " SoilMoist";
+         #endif
+                   
           if (soilMoist < moist_alarm_level)
           {
             notification = notification + " Lo Alarm";
@@ -1366,23 +1368,23 @@ void time_keeping()
     }
   }
 
-#if 1
-  static ulong delta_millis;
-
-  delta_millis = millis() - prev_millis;
-  curr_time += delta_millis / 1000;
-  prev_millis += (delta_millis / 1000) * 1000;
-
-#else
-
-  while (millis() - prev_millis >= 1000)
-  {
-    curr_time ++;
-    prev_millis += 1000;
-    delay(0);
-  }
-
-#endif
+  #if 1
+    static ulong delta_millis;
+     
+    delta_millis = millis() - prev_millis;        
+    curr_time += delta_millis / 1000;
+    prev_millis += (delta_millis / 1000) * 1000;
+          
+  #else
+     
+    while (millis() - prev_millis >= 1000)
+    {
+      curr_time ++;
+      prev_millis += 1000;
+      delay(0);
+    }
+      
+  #endif
 
   curr_hour = (curr_time % 86400) / 3600;
 }
@@ -1422,37 +1424,37 @@ void startTimers(void)
 // Use this to avoid being blocked here if no WiFi
 void connectWiFi(const char* ssid, const char* pass)
 {
-#if (DEBUG_LOOP > 1)
-  Serial.printf("Connecting to %s\n", ssid);
-#endif
+    #if (DEBUG_LOOP > 1)
+    Serial.printf("Connecting to %s\n", ssid);
+    #endif
+    
+    WiFi.mode(WIFI_STA);
+    if (pass && strlen(pass)) 
+    {
+        WiFi.begin(ssid, pass);
+    } else 
+    {
+        WiFi.begin(ssid);
+    }
+    int i = 0;
+    while ((i++ < 30) && (WiFi.status() != WL_CONNECTED)) 
+    {
+        BlynkDelay(500);
+    }
 
-  WiFi.mode(WIFI_STA);
-  if (pass && strlen(pass))
-  {
-    WiFi.begin(ssid, pass);
-  } else
-  {
-    WiFi.begin(ssid);
-  }
-  int i = 0;
-  while ((i++ < 30) && (WiFi.status() != WL_CONNECTED))
-  {
-    BlynkDelay(500);
-  }
-
-#if (DEBUG_LOOP > 1)
-  if (WiFi.status() == WL_CONNECTED)
-    Serial.println("Connected to WiFi");
-  else
-    Serial.println("Can't connect to WiFi");
-#endif
+    #if (DEBUG_LOOP > 1)
+    if (WiFi.status() == WL_CONNECTED)
+      Serial.println("Connected to WiFi");
+    else
+      Serial.println("Can't connect to WiFi");
+    #endif
 }
 
 
 void setup()
 {
   Serial.begin(115200);
-
+  
 #if USE_ESP32
   adcAttachPin(SOIL_MOIST_PIN);
   // Use 12bit ADC, 0-4095
@@ -1470,7 +1472,7 @@ void setup()
 #endif
 
 
-
+  
   pinMode(PUMP_RELAY_PIN, OUTPUT);
   pinMode(PIN_LED, OUTPUT);
   digitalWrite(PIN_LED, LOW); // turn the LED on by making the voltage LOW to tell us we are in configuration mode.
@@ -1478,135 +1480,139 @@ void setup()
 
   Serial.println("\nStarting");
 
-#if (USE_DEEPSLEEP)
+  #if (USE_DEEPSLEEP)
+   
+   #if (USE_ESP32)
+      // Read and restore important vars from RTC memory and only if they're valid by checking bootCount > 0
+      if (bootCount > 0)
+      {
+        DEEPSLEEP_INTERVAL_FACTOR = RTC_DEEPSLEEP_INTERVAL_FACTOR;
+        TIME_TO_DEEPSLEEP         = RTC_TIME_TO_DEEPSLEEP;
+  
+        DRY_SOIL                  = RTC_DRY_SOIL;
+        DHTTYPE                   = RTC_DHTTYPE;
 
-#if (USE_ESP32)
-  // Read and restore important vars from RTC memory and only if they're valid by checking bootCount > 0
-  if (bootCount > 0)
-  {
-    DEEPSLEEP_INTERVAL_FACTOR = RTC_DEEPSLEEP_INTERVAL_FACTOR;
-    TIME_TO_DEEPSLEEP         = RTC_TIME_TO_DEEPSLEEP;
+        #if USE_BITFIELD
+          MW33              = (boolean) RTC_Data.MW33;
+          sensorCapacitive  = (boolean) RTC_Data.sensorCapacitive;
+          USE_CELCIUS       = (boolean) RTC_Data.USE_CELCIUS;
+        #else        
+          // Better to use bit field for boolean data
+          MW33              = (boolean) RTC_MW33;
+          sensorCapacitive  = (boolean) RTC_sensorCapacitive;
+          USE_CELCIUS       = (boolean) RTC_USE_CELCIUS;    
+        #endif  
+      }
 
-    DRY_SOIL                  = RTC_DRY_SOIL;
-    DHTTYPE                   = RTC_DHTTYPE;
+     //Increment boot number and print it every reboot
+      ++bootCount;
+      
+      //Print the wakeup reason for ESP32
+      print_wakeup_reason();
 
-#if USE_BITFIELD
-    MW33              = (boolean) RTC_Data.MW33;
-    sensorCapacitive  = (boolean) RTC_Data.sensorCapacitive;
-    USE_CELCIUS       = (boolean) RTC_Data.USE_CELCIUS;
-#else
-    // Better to use bit field for boolean data
-    MW33              = (boolean) RTC_MW33;
-    sensorCapacitive  = (boolean) RTC_sensorCapacitive;
-    USE_CELCIUS       = (boolean) RTC_USE_CELCIUS;
-#endif
-  }
+    #else   //#if (USE_ESP32)
+    
+      struct rst_info *pResetInfo = ESP.getResetInfoPtr();
+      
+      if ((pResetInfo->reason == REASON_DEEP_SLEEP_AWAKE))
+      {
+        // Read stored bootCount from RTC memory if booting from DeepSleep
+        ESP.rtcUserMemoryRead(bootCountOffset, &bootCount, sizeof(bootCount));
 
-  //Increment boot number and print it every reboot
-  ++bootCount;
+        // Read and restore important vars from RTC memory and only if they're valid by checking bootCount > 0
+        if (bootCount > 0)
+        {          
+          ESP.rtcUserMemoryRead(bootCountOffset + sizeof(bootCount), &DEEPSLEEP_INTERVAL_FACTOR, sizeof(DEEPSLEEP_INTERVAL_FACTOR));
+          ESP.rtcUserMemoryRead(bootCountOffset + sizeof(bootCount) + sizeof(DEEPSLEEP_INTERVAL_FACTOR), &TIME_TO_DEEPSLEEP, sizeof(TIME_TO_DEEPSLEEP));
+          
+          ESP.rtcUserMemoryRead(bootCountOffset + sizeof(bootCount) + sizeof(DEEPSLEEP_INTERVAL_FACTOR) + sizeof(TIME_TO_DEEPSLEEP), &DRY_SOIL, sizeof(DRY_SOIL));
+          ESP.rtcUserMemoryRead(bootCountOffset + sizeof(bootCount) + sizeof(DEEPSLEEP_INTERVAL_FACTOR) + sizeof(TIME_TO_DEEPSLEEP) + 
+                  sizeof(DRY_SOIL), &RTC_DHTTYPE, sizeof(RTC_DHTTYPE));
+          DHTTYPE = (DHTesp::DHT_MODEL_t) RTC_DHTTYPE;
 
-  //Print the wakeup reason for ESP32
-  print_wakeup_reason();
 
-#else   //#if (USE_ESP32)
+          #if USE_BITFIELD
+            ESP.rtcUserMemoryRead(bootCountOffset + sizeof(bootCount) + sizeof(DEEPSLEEP_INTERVAL_FACTOR) + sizeof(TIME_TO_DEEPSLEEP) + 
+                      sizeof(DRY_SOIL) + sizeof(RTC_DHTTYPE), (uint32_t *) &RTC_Data, sizeof(uint32_t));   
+            MW33              = (boolean) RTC_Data.MW33;
+            sensorCapacitive  = (boolean) RTC_Data.sensorCapacitive;
+            USE_CELCIUS       = (boolean) RTC_Data.USE_CELCIUS;
+            
+          #else        
+            ESP.rtcUserMemoryRead(bootCountOffset + sizeof(bootCount) + sizeof(DEEPSLEEP_INTERVAL_FACTOR) + sizeof(TIME_TO_DEEPSLEEP) + 
+                    sizeof(DRY_SOIL) + sizeof(RTC_DHTTYPE), &RTC_MW33, sizeof(RTC_MW33));                  
+            MW33 = (boolean) RTC_MW33;
+            
+            ESP.rtcUserMemoryRead(bootCountOffset + sizeof(bootCount) + sizeof(DEEPSLEEP_INTERVAL_FACTOR) + sizeof(TIME_TO_DEEPSLEEP) + 
+                    sizeof(DRY_SOIL) + sizeof(RTC_DHTTYPE) + sizeof(RTC_MW33), &RTC_sensorCapacitive, sizeof(RTC_sensorCapacitive));  
+            sensorCapacitive = (boolean) RTC_sensorCapacitive;
+                     
+            ESP.rtcUserMemoryRead(bootCountOffset + sizeof(bootCount) + sizeof(DEEPSLEEP_INTERVAL_FACTOR) + sizeof(TIME_TO_DEEPSLEEP) + 
+                    sizeof(DRY_SOIL) + sizeof(RTC_DHTTYPE) + sizeof(RTC_MW33) + sizeof(RTC_sensorCapacitive), &RTC_USE_CELCIUS, sizeof(RTC_USE_CELCIUS));
+            USE_CELCIUS = (boolean) RTC_USE_CELCIUS;
+          #endif        
 
-  struct rst_info *pResetInfo = ESP.getResetInfoPtr();
+        }                 
+               
+        
+        #if (DEBUG_LOOP > 1)
+        Serial.println("Read BootCount from RTC: " + String(bootCount));
+        #endif
+      }
+      
+      //Increment boot number and print it every reboot
+      ++bootCount;
+        
+      // Store current bootCount back in RTC memory
+      ESP.rtcUserMemoryWrite(bootCountOffset, &bootCount, sizeof(bootCount));
+    
+      // ESP8266 has limit deepSleepMax ~ 230 mins
+      deepSleepMax_mins = (uint64_t) ESP.deepSleepMax() / uS_TO_MIN_FACTOR;
+      deepSleepMax_mins = deepSleepMax_mins - deepSleepMax_mins % 10;
+      
+      #if 1 //(DEBUG_LOOP > 1)
+      Serial.printf("ESP8266: Max deepSleep = %lld minutes\n", deepSleepMax_mins);
+      #endif
+    
+    #endif    //(USE_ESP32)
 
-  if ((pResetInfo->reason == REASON_DEEP_SLEEP_AWAKE))
-  {
-    // Read stored bootCount from RTC memory if booting from DeepSleep
-    ESP.rtcUserMemoryRead(bootCountOffset, &bootCount, sizeof(bootCount));
-
-    // Read and restore important vars from RTC memory and only if they're valid by checking bootCount > 0
-    if (bootCount > 0)
+    #if (DEBUG_LOOP > 0)
+    Serial.println("Boot number: " + String(bootCount));
+    if (bootCount > 1)
     {
-      ESP.rtcUserMemoryRead(bootCountOffset + sizeof(bootCount), &DEEPSLEEP_INTERVAL_FACTOR, sizeof(DEEPSLEEP_INTERVAL_FACTOR));
-      ESP.rtcUserMemoryRead(bootCountOffset + sizeof(bootCount) + sizeof(DEEPSLEEP_INTERVAL_FACTOR), &TIME_TO_DEEPSLEEP, sizeof(TIME_TO_DEEPSLEEP));
-
-      ESP.rtcUserMemoryRead(bootCountOffset + sizeof(bootCount) + sizeof(DEEPSLEEP_INTERVAL_FACTOR) + sizeof(TIME_TO_DEEPSLEEP), &DRY_SOIL, sizeof(DRY_SOIL));
-      ESP.rtcUserMemoryRead(bootCountOffset + sizeof(bootCount) + sizeof(DEEPSLEEP_INTERVAL_FACTOR) + sizeof(TIME_TO_DEEPSLEEP) +
-                            sizeof(DRY_SOIL), &RTC_DHTTYPE, sizeof(RTC_DHTTYPE));
-      DHTTYPE = (DHTesp::DHT_MODEL_t) RTC_DHTTYPE;
-
-
-#if USE_BITFIELD
-      ESP.rtcUserMemoryRead(bootCountOffset + sizeof(bootCount) + sizeof(DEEPSLEEP_INTERVAL_FACTOR) + sizeof(TIME_TO_DEEPSLEEP) +
-                            sizeof(DRY_SOIL) + sizeof(RTC_DHTTYPE), (uint32_t *) &RTC_Data, sizeof(uint32_t));
-      MW33              = (boolean) RTC_Data.MW33;
-      sensorCapacitive  = (boolean) RTC_Data.sensorCapacitive;
-      USE_CELCIUS       = (boolean) RTC_Data.USE_CELCIUS;
-
-#else
-      ESP.rtcUserMemoryRead(bootCountOffset + sizeof(bootCount) + sizeof(DEEPSLEEP_INTERVAL_FACTOR) + sizeof(TIME_TO_DEEPSLEEP) +
-                            sizeof(DRY_SOIL) + sizeof(RTC_DHTTYPE), &RTC_MW33, sizeof(RTC_MW33));
-      MW33 = (boolean) RTC_MW33;
-
-      ESP.rtcUserMemoryRead(bootCountOffset + sizeof(bootCount) + sizeof(DEEPSLEEP_INTERVAL_FACTOR) + sizeof(TIME_TO_DEEPSLEEP) +
-                            sizeof(DRY_SOIL) + sizeof(RTC_DHTTYPE) + sizeof(RTC_MW33), &RTC_sensorCapacitive, sizeof(RTC_sensorCapacitive));
-      sensorCapacitive = (boolean) RTC_sensorCapacitive;
-
-      ESP.rtcUserMemoryRead(bootCountOffset + sizeof(bootCount) + sizeof(DEEPSLEEP_INTERVAL_FACTOR) + sizeof(TIME_TO_DEEPSLEEP) +
-                            sizeof(DRY_SOIL) + sizeof(RTC_DHTTYPE) + sizeof(RTC_MW33) + sizeof(RTC_sensorCapacitive), &RTC_USE_CELCIUS, sizeof(RTC_USE_CELCIUS));
-      USE_CELCIUS = (boolean) RTC_USE_CELCIUS;
-#endif
-
+      Serial.printf("Restore DEEPSLEEP_INTERVAL_FACTOR = %ld, TIME_TO_DEEPSLEEP = %ld, DRY_SOIL = %ld, DHTTYPE = %ld\n", DEEPSLEEP_INTERVAL_FACTOR, TIME_TO_DEEPSLEEP, DRY_SOIL, (ulong) DHTTYPE);
+      Serial.printf("Restore MW33 = %s, sensorCapacitive = %s, USE_CELCIUS = %s\n", MW33 ? "true" : "false", sensorCapacitive ? "Capacitive" : "Resistive", USE_CELCIUS ? "true" : "false" );
     }
+    #endif
 
 
-#if (DEBUG_LOOP > 1)
-    Serial.println("Read BootCount from RTC: " + String(bootCount));
-#endif
-  }
+  #endif    //USE_DEEPSLEEP
 
-  //Increment boot number and print it every reboot
-  ++bootCount;
-
-  // Store current bootCount back in RTC memory
-  ESP.rtcUserMemoryWrite(bootCountOffset, &bootCount, sizeof(bootCount));
-
-  // ESP8266 has limit deepSleepMax ~ 230 mins
-  deepSleepMax_mins = (uint64_t) ESP.deepSleepMax() / uS_TO_MIN_FACTOR;
-  deepSleepMax_mins = deepSleepMax_mins - deepSleepMax_mins % 10;
-
-#if 1 //(DEBUG_LOOP > 1)
-  Serial.printf("ESP8266: Max deepSleep = %lld minutes\n", deepSleepMax_mins);
-#endif
-
-#endif    //(USE_ESP32)
-
-#if (DEBUG_LOOP > 0)
-  Serial.println("Boot number: " + String(bootCount));
-  if (bootCount > 1)
-  {
-    Serial.printf("Restore DEEPSLEEP_INTERVAL_FACTOR = %ld, TIME_TO_DEEPSLEEP = %ld, DRY_SOIL = %ld, DHTTYPE = %ld\n", DEEPSLEEP_INTERVAL_FACTOR, TIME_TO_DEEPSLEEP, DRY_SOIL, (ulong) DHTTYPE);
-    Serial.printf("Restore MW33 = %s, sensorCapacitive = %s, USE_CELCIUS = %s\n", MW33 ? "true" : "false", sensorCapacitive ? "Capacitive" : "Resistive", USE_CELCIUS ? "true" : "false" );
-  }
-#endif
-
-
-#endif    //USE_DEEPSLEEP
-
-#if 1
-#if USE_BLYNK_WM
-  Blynk.begin();
-#else
-  //WiFi.begin(ssid.c_str(), pass.c_str());
-  // Use this to avoid being blocked here if no WiFi
-  connectWiFi(ssid.c_str(), pass.c_str());
-  Blynk.config(blynk_token.c_str(), cloudBlynkServer.c_str(), BLYNK_SERVER_HARDWARE_PORT);
-#if (DEBUG_LOOP > 1)
-  Serial.println("Done Blynk.config()");
-#endif
-  Blynk.connect();
-#if (DEBUG_LOOP > 1)
-  Serial.println("Done Blynk.connect()");
-#endif
-#endif
-#else
-  // Use this is bad, and will be blocked here if no WiFi
-  Blynk.begin(blynk_token.c_str(), ssid.c_str(), pass.c_str(), cloudBlynkServer.c_str(), BLYNK_SERVER_HARDWARE_PORT);
-#endif
-
+  #if 1
+    #if USE_BLYNK_WM
+      // Use this to default DHCP hostname to ESP8266-XXXXXX or ESP32-XXXXXX
+      //Blynk.begin();
+      // Use this to personalize DHCP hostname (RFC952 conformed)
+      // 24 chars max,- only a..z A..Z 0..9 '-' and no '-' as last char
+      Blynk.begin("SmartFarm32-SSL-Test");
+    #else
+      //WiFi.begin(ssid.c_str(), pass.c_str());
+      // Use this to avoid being blocked here if no WiFi
+      connectWiFi(ssid.c_str(), pass.c_str());
+      Blynk.config(blynk_token.c_str(), cloudBlynkServer.c_str(), BLYNK_SERVER_HARDWARE_PORT);
+      #if (DEBUG_LOOP > 1)
+      Serial.println("Done Blynk.config()");
+      #endif
+      Blynk.connect();
+      #if (DEBUG_LOOP > 1)
+      Serial.println("Done Blynk.connect()");
+      #endif
+    #endif  
+  #else
+    // Use this is bad, and will be blocked here if no WiFi
+    Blynk.begin(blynk_token.c_str(), ssid.c_str(), pass.c_str(), cloudBlynkServer.c_str(), BLYNK_SERVER_HARDWARE_PORT);
+  #endif
+  
   if (Blynk.connected())
   {
     updateBlynkStatus();
@@ -1621,7 +1627,7 @@ void setup()
 
 void loop()
 {
-  Blynk.run();
+  Blynk.run();  
   timer.run();
 
   check_status();
