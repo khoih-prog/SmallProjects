@@ -1,9 +1,21 @@
-## Small Projects to demonstrate the usage of ISR-based timers for ESP8266, ESP32 and Arduino Mega, Nano, etc.
+# SmallProjects Library
 
+[![arduino-library-badge](https://www.ardu-badge.com/badge/SmallProjects.svg?)](https://www.ardu-badge.com/SmallProjects)
 [![GitHub release](https://img.shields.io/github/release/khoih-prog/SmallProjects.svg)](https://github.com/khoih-prog/SmallProjects/releases)
 [![GitHub](https://img.shields.io/github/license/mashape/apistatus.svg)](https://github.com/khoih-prog/SmallProjects/blob/master/LICENSE)
 [![contributions welcome](https://img.shields.io/badge/contributions-welcome-brightgreen.svg?style=flat)](#Contributing)
 [![GitHub issues](https://img.shields.io/github/issues/khoih-prog/SmallProjects.svg)](http://github.com/khoih-prog/SmallProjects/issues)
+
+
+---
+---
+
+### Why do we need this [SmallProjects library](https://github.com/khoih-prog/SmallProjects)
+
+### Features
+
+[SmallProjects library](https://github.com/khoih-prog/SmallProjects) collects all complicated projects to demonstrate the usage of [Khoi Hoang's libraries](https://github.com/khoih-prog/SmallProjects), such as ISR-based timers for ESP8266, ESP32 and Arduino Mega, Nano, etc. These projects are much more complicated than the ordinary libraries' examples. Some can even be used directly in real-life.
+
 
 ### ISR-based Fire Smoke Alarm demonstrate how to use ESP8266TimerInterrupt, ESP32TimerInterrupt and TimerInterrupt Library
 
@@ -25,9 +37,10 @@ Functions using normal software timers, relying on loop() and calling millis(), 
 
 The catch is your function is now part of an `ISR (Interrupt Service Routine)`, and must be `lean / mean`, and follow certain rules. More to read on:
 
-[Attach Interrupt](https://www.arduino.cc/reference/en/language/functions/external-interrupts/attachinterrupt/)
+https://www.arduino.cc/reference/en/language/functions/external-interrupts/attachinterrupt/
 
-**Important Notes:**
+## Important Notes:
+
 1. Inside the attached function, delay() won’t work and the value returned by millis() will not increment. Serial data received while in the function may be lost. You should declare as volatile any variables that you modify within the attached function.
 
 2. Typically global variables are used to pass data between an ISR and the main program. To make sure variables shared between an ISR and the main program are updated correctly, declare them as volatile.
@@ -44,7 +57,15 @@ Certainly, with Blynk GUI, we can achieve many more great features, such as `rem
 
 This can be applied in many projects requiring reliable system control, where `good, bad, or no connection has no effect on the operation of the system`.
 
-### Projects
+---
+---
+
+### Changelog
+
+#### Release v1.0.2
+
+1. Add [STM32_LAN8720 examples](./STM32_LAN8720)
+
 
 #### Release v1.0.1
 
@@ -70,12 +91,32 @@ Sample codes:
 
 The corresponding codes using Software Timers are also included to help understand the steps taken in order to convert those codes to be ISR-based.
 
+---
+---
+
+### Issues
+
+Submit issues to: [SmallProjects issues](https://github.com/khoih-prog/SmallProjects/issues)
+
+---
+---
+
 ## Contributing
+
 If you want to contribute to this project:
 - Report bugs and errors
 - Ask for enhancements
 - Create issues and pull requests
 - Tell other people about this library
 
+---
+
+### License
+
+- The library is licensed under [MIT](https://github.com/khoih-prog/SmallProjects/blob/master/LICENSE)
+
+---
+
 ## Copyright
+
 Copyright 2019- Khoi Hoang
