@@ -91,6 +91,34 @@ Sample codes:
 
 The corresponding codes using Software Timers are also included to help understand the steps taken in order to convert those codes to be ISR-based.
 
+   
+---
+---
+
+## Installation
+
+### Use Arduino Library Manager
+
+The best and easiest way is to use `Arduino Library Manager`. Search for [**SmallProjects**](https://github.com/khoih-prog/SmallProjects), then select / install the latest version.
+You can also use this link [![arduino-library-badge](https://www.ardu-badge.com/badge/SmallProjects.svg?)](https://www.ardu-badge.com/SmallProjects) for more detailed instructions.
+
+### Manual Install
+
+Another way to install is to:
+
+1. Navigate to [**SmallProjects**](https://github.com/khoih-prog/SmallProjects) page.
+2. Download the latest release `SmallProjects-master.zip`.
+3. Extract the zip file to `SmallProjects-master` directory 
+4. Copy whole `SmallProjects-master` folder to Arduino libraries' directory such as `~/Arduino/libraries/`.
+
+### VS Code & PlatformIO
+
+1. Install [VS Code](https://code.visualstudio.com/)
+2. Install [PlatformIO](https://platformio.org/platformio-ide)
+3. Install [**SmallProjects** library](https://platformio.org/lib/show/xxxxx/SmallProjects) or [**SmallProjects** library](https://platformio.org/lib/show/11463/SmallProjects) by using [Library Manager](https://platformio.org/lib/show/xxxxx/SmallProjects/installation). Search for **SmallProjects** in [Platform.io Author's Libraries](https://platformio.org/lib/search?query=author:%22Khoi%20Hoang%22)
+4. Use included [platformio.ini](platformio/platformio.ini) file from examples to ensure that all dependent libraries will installed automatically. Please visit documentation for the other options and examples at [Project Configuration File](https://docs.platformio.org/page/projectconf.html)
+
+
 ---
 ---
 

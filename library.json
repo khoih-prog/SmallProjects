@@ -1,0 +1,29 @@
+{
+  "name": "SmallProjects",
+  "version": "1.0.2",
+  "keywords": "Other,Timing,Control,Device,Time,Timer,AVR,SAM-DUE,ESP32,ESP8266,SAMD,interrupt",
+  "description": "Small Projects to demonstrate the usage of Khoi Hoang's libraries, such as ISR-based timers for ESP8266, ESP32 and Arduino Mega, Nano, etc. These projects are much more complicated than the ordinary libraries' examples. Some can even be used directly in real-life.",
+  "authors":
+  {
+    "name":  "Khoi Hoang",
+    "url":   "https://github.com/khoih-prog",
+    "maintainer": true
+  },
+  "repository":
+  {
+    "type": "git",
+    "url": "//https://github.com/khoih-prog/SmallProjects"
+  },
+  "homepage": "https://github.com/khoih-prog/SmallProjects",
+  "export": {
+    "exclude": [
+      "linux",
+      "extras",
+      "tests"
+    ]
+  },
+  "frameworks": "*",
+  "platforms": "*",
+  "examples": "examples/*/*/*.ino",
+  "license": "MIT"
+}
